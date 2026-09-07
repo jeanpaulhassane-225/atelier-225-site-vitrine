@@ -172,13 +172,37 @@ en ligne. Un piège à robots (champ `_pot`) est déjà en place.
 
 ## Déploiement
 
-`npm run build` produit un dossier `dist/` de fichiers statiques. Il s'héberge partout :
+`npm run build` produit un dossier `dist/` de fichiers statiques, hébergeable partout.
+Cible retenue : **Cloudflare Pages**, connecté au dépôt GitHub.
 
-- **Netlify / Vercel / Cloudflare Pages** : commande de build `npm run build`, dossier `dist`.
-- **GitHub Pages** : publier le contenu de `dist/`.
-- **Serveur classique** : copier `dist/` dans la racine web.
+### Cloudflare Pages via l'intégration Git (recommandé)
 
-Penser à mettre le vrai domaine dans `astro.config.mjs` (`site:`) avant le build final.
+Chaque push sur `main` déclenche un build et un déploiement ; chaque PR reçoit
+un déploiement de prévisualisation. Aucun secret à stocker dans GitHub.
+
+1. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+2. Autoriser GitHub, choisir le dépôt `atelier-225-site-vitrine`.
+3. Réglages de build (Cloudflare détecte le préréglage « Astro », sinon manuellement) :
+   - **Build command** : `npm run build`
+   - **Build output directory** : `dist`  (déjà déclaré dans `wrangler.toml`)
+   - **Root directory** : laisser vide
+   - La version de Node est lue depuis `.nvmrc` (24)
+4. **Save and Deploy**. L'URL `https://atelier-225-site-vitrine.pages.dev` est en ligne à la fin du build.
+
+`public/_headers` ajoute quelques en-têtes de sécurité et un cache long sur `/_astro/*`.
+
+### Alternative : déploiement piloté par GitHub Actions
+
+Si tu préfères garder le pipeline dans le dépôt : ajouter un workflow avec
+`cloudflare/wrangler-action` (`wrangler pages deploy dist`) et deux secrets de
+dépôt, `CLOUDFLARE_API_TOKEN` (portée « Cloudflare Pages : Edit ») et
+`CLOUDFLARE_ACCOUNT_ID`. Moins simple que l'intégration Git, et il faut recréer
+les prévisualisations de PR à la main.
+
+### Avant la mise en ligne
+
+- Mettre le vrai domaine dans `astro.config.mjs` (`site:`), il sert au sitemap et à l'Open Graph.
+- Remplacer la marque et les noms de clients placeholder (voir plus haut).
 
 ## Accessibilité
 
