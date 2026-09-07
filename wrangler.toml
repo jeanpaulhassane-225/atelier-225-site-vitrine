@@ -1,0 +1,5 @@
+# Configuration Cloudflare Pages.
+# Utile pour `wrangler pages deploy` (upload direct) et repris par le tableau de
+# bord Cloudflare : il n'a plus besoin qu'on lui indique le dossier de sortie.
+name = "atelier-225-site-vitrine"
+pages_build_output_dir = "dist"
