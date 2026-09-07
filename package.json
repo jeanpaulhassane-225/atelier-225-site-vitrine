@@ -12,6 +12,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "verifier": "npm run check && npm run build",
+    "postinstall": "node scripts/setup-hooks.mjs",
     "astro": "astro"
   },
   "dependencies": {

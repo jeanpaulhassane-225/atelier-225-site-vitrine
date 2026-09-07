@@ -34,15 +34,30 @@ Node 18.20.8+ requis. La version de référence est dans `.nvmrc` (Node 24), uti
 
 ## Intégration continue
 
+### Côté serveur
+
 `.github/workflows/ci.yml` lance `npm ci`, `npm run check` puis `npm run build`
 à chaque push sur `main` et à chaque pull request qui vise `main`. C'est la même
-chaîne que `npm run verifier` en local.
+chaîne que `npm run verifier` en local. La CI **rapporte** l'échec mais ne
+**bloque** pas encore la fusion : la protection de branche « Require status
+checks to pass » n'est pas disponible sur un dépôt privé en offre GitHub
+gratuite. Pour l'activer un jour : passer le dépôt public, ou prendre GitHub
+Pro, puis Settings → Branches (ou Rulesets) → exiger le job `check + build`.
 
-Pour rendre ce contrôle **bloquant** avant fusion, il faut activer la protection
-de branche dans les réglages GitHub du dépôt (Settings → Branches, ou Rulesets),
-et cocher « Require status checks to pass » avec le job `check + build`. Cette
-option n'est pas disponible sur un dépôt privé en offre GitHub gratuite : passer
-le dépôt public, ou prendre GitHub Pro/Team.
+### Côté local (garde-fou)
+
+Un hook git `pre-push` (`.githooks/pre-push`) lance `npm run verifier` avant
+tout push **vers `main`** et refuse le push s'il échoue. Il s'active tout seul
+après `npm install` (script `postinstall` → `scripts/setup-hooks.mjs`, qui pose
+`git config core.hooksPath .githooks`). Pour l'activer à la main :
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Limites, assumées : contournable avec `git push --no-verify`, purement local,
+aucune application côté GitHub. Ça protège la machine de développement, ça ne
+remplace pas une vraie protection de branche.
 
 ## Structure
 

@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Garde-fou local. Refuse le push vers main si `npm run verifier`
+# (astro check + astro build) echoue.
+#
+# Limites assumees :
+#   - contournable avec `git push --no-verify`
+#   - purement local, aucune application cote serveur GitHub
+#   - ne satisfait donc PAS le critere 3 du socle senior (voir README)
+#
+# Actif seulement si core.hooksPath pointe vers .githooks
+# (fait par `npm install` via scripts/setup-hooks.mjs, ou a la main :
+#  git config core.hooksPath .githooks).
+
+pousse_vers_main=0
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main) pousse_vers_main=1 ;;
+  esac
+done
+
+if [ "$pousse_vers_main" -eq 0 ]; then
+  exit 0
+fi
+
+echo "pre-push : verification avant push vers main..."
+if ! npm run verifier; then
+  echo ""
+  echo "  Push refuse : 'npm run verifier' a echoue."
+  echo "  Corrige les erreurs, ou passe outre avec 'git push --no-verify' (deconseille)."
+  exit 1
+fi
+
+echo "pre-push : verifier OK, push autorise."
+exit 0
