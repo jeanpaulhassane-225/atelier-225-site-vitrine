@@ -1,0 +1,40 @@
+name: CI
+
+# Se déclenche sur chaque push vers main et sur chaque pull request qui vise main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Le job n'a besoin que de lire le dépôt.
+permissions:
+  contents: read
+
+# Une PR mise à jour plusieurs fois de suite : on annule le run précédent.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verifier:
+    name: check + build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Vérification des types et du contenu
+        run: npm run check
+
+      - name: Build de production
+        run: npm run build

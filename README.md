@@ -24,12 +24,25 @@ npm run dev      # http://localhost:4321
 ```
 
 ```bash
-npm run build    # génère dist/
-npm run preview  # sert dist/ en local pour vérifier avant déploiement
-npm run check    # vérification TypeScript + Astro (à lancer avant un commit)
+npm run build     # génère dist/
+npm run preview   # sert dist/ en local pour vérifier avant déploiement
+npm run check     # vérification TypeScript + Astro
+npm run verifier  # check + build, reproduit exactement la CI (à lancer avant un commit)
 ```
 
-Node 18.20.8+ requis (testé sur Node 24).
+Node 18.20.8+ requis. La version de référence est dans `.nvmrc` (Node 24), utilisée par la CI et localement si tu as nvm.
+
+## Intégration continue
+
+`.github/workflows/ci.yml` lance `npm ci`, `npm run check` puis `npm run build`
+à chaque push sur `main` et à chaque pull request qui vise `main`. C'est la même
+chaîne que `npm run verifier` en local.
+
+Pour rendre ce contrôle **bloquant** avant fusion, il faut activer la protection
+de branche dans les réglages GitHub du dépôt (Settings → Branches, ou Rulesets),
+et cocher « Require status checks to pass » avec le job `check + build`. Cette
+option n'est pas disponible sur un dépôt privé en offre GitHub gratuite : passer
+le dépôt public, ou prendre GitHub Pro/Team.
 
 ## Structure
 
