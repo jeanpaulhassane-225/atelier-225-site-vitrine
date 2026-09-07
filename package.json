@@ -12,6 +12,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "verifier": "npm run check && npm run build",
+    "deploy": "npm run build && npx wrangler@4.129.1 pages deploy dist --project-name=atelier-225-site-vitrine",
     "postinstall": "node scripts/setup-hooks.mjs",
     "astro": "astro"
   },
