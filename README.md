@@ -191,13 +191,35 @@ un déploiement de prévisualisation. Aucun secret à stocker dans GitHub.
 
 `public/_headers` ajoute quelques en-têtes de sécurité et un cache long sur `/_astro/*`.
 
-### Alternative : déploiement piloté par GitHub Actions
+### Déploiement piloté par GitHub Actions
 
-Si tu préfères garder le pipeline dans le dépôt : ajouter un workflow avec
-`cloudflare/wrangler-action` (`wrangler pages deploy dist`) et deux secrets de
-dépôt, `CLOUDFLARE_API_TOKEN` (portée « Cloudflare Pages : Edit ») et
-`CLOUDFLARE_ACCOUNT_ID`. Moins simple que l'intégration Git, et il faut recréer
-les prévisualisations de PR à la main.
+`.github/workflows/deploy.yml` déploie sur Cloudflare Pages via
+`cloudflare/wrangler-action` : production sur chaque push vers `main`,
+prévisualisation sur chaque pull request, plus un déclenchement manuel.
+
+Le job est **inerte tant que le secret `CLOUDFLARE_API_TOKEN` n'est pas
+configuré** (il apparaît comme « skipped », pas en échec). Pour l'activer :
+
+1. **Créer un token API Cloudflare** : dash.cloudflare.com → *My Profile* →
+   *API Tokens* → *Create Token* → *Custom token*, permission
+   **Account → Cloudflare Pages → Edit**.
+2. **Récupérer l'Account ID** : visible dans *Workers & Pages* (colonne de droite).
+3. **Ajouter les deux secrets au dépôt** :
+
+   ```bash
+   gh secret set CLOUDFLARE_API_TOKEN
+   gh secret set CLOUDFLARE_ACCOUNT_ID
+   ```
+
+Au premier passage, le workflow crée le projet Pages `atelier-225-site-vitrine`
+s'il n'existe pas. Version de `wrangler` figée dans le workflow (`4.129.1`), à
+bumper d'une ligne au besoin.
+
+Déploiement manuel en local : `npm run deploy` (nécessite d'être connecté à
+Cloudflare, `npx wrangler login`).
+
+> Choisir **une seule** des deux méthodes. L'intégration Git et ce workflow
+> déploieraient tous les deux à chaque push.
 
 ### Avant la mise en ligne
 

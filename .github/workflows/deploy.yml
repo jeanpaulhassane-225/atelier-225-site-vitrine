@@ -1,0 +1,68 @@
+name: Deploy
+
+# Déploiement sur Cloudflare Pages.
+#   - push sur main       -> déploiement de production (--branch=main)
+#   - pull request         -> déploiement de prévisualisation (--branch=<branche>)
+#   - déclenchement manuel  -> redéploiement à la demande
+#
+# La tâche de déploiement ne s'exécute que si le secret CLOUDFLARE_API_TOKEN est
+# configuré. Sinon elle est ignorée proprement (statut « skipped », pas d'échec).
+# Mise en route : voir README, section « Déploiement piloté par GitHub Actions ».
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        run: echo "configured=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
+  cloudflare-pages:
+    name: Cloudflare Pages
+    needs: gate
+    # Secret présent, et jamais pour une PR venant d'un fork (aucun accès aux secrets).
+    if: needs.gate.outputs.configured == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v5
+
+      - name: Installer Node
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Build de production
+        run: npm run build
+
+      - name: Déployer sur Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.129.1'
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Crée le projet Pages au premier passage ; sans effet s'il existe déjà.
+          preCommands: wrangler pages project create atelier-225-site-vitrine --production-branch=main 2>/dev/null || true
+          command: pages deploy dist --project-name=atelier-225-site-vitrine --branch=${{ github.head_ref || github.ref_name }}
