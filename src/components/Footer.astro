@@ -1,0 +1,106 @@
+---
+import { SITE, NAV } from '../consts';
+import { lienTel } from '../lib/format';
+
+const annee = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__grid">
+    <div class="site-footer__brand">
+      <p class="site-footer__name" translate="no">{SITE.nom}</p>
+      <p class="text-dim">{SITE.baseline}</p>
+    </div>
+
+    <nav class="site-footer__col" aria-label="Pied de page">
+      <h2 class="site-footer__title">Le site</h2>
+      <ul role="list" class="site-footer__list">
+        {NAV.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="site-footer__col">
+      <h2 class="site-footer__title">Contact</h2>
+      <ul role="list" class="site-footer__list">
+        <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+        <li><a href={lienTel(SITE.telephone)}>{SITE.telephone}</a></li>
+        <li>{SITE.ville}</li>
+      </ul>
+    </div>
+
+    <div class="site-footer__col">
+      <h2 class="site-footer__title">Suivre</h2>
+      <ul role="list" class="site-footer__list">
+        {SITE.reseaux.map((r) => (
+          <li><a href={r.url} rel="me noopener" target="_blank">{r.label}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <div class="wrap site-footer__base">
+    <p class="text-dim">© <span class="tnum">{annee}</span> {SITE.nom}. Tous droits réservés.</p>
+    <p class="text-dim">Abidjan · <span translate="no">225</span></p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-block-start: var(--space-2xl);
+    padding-block: var(--space-xl) var(--space-l);
+    border-block-start: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .site-footer__grid {
+    display: grid;
+    gap: var(--space-l) var(--space-m);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 40rem) {
+    .site-footer__grid {
+      grid-template-columns: 1.4fr repeat(3, 1fr);
+    }
+  }
+  .site-footer__name {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    margin-block-end: 0.4rem;
+  }
+  .site-footer__brand p:last-child {
+    max-width: 32ch;
+  }
+  .site-footer__title {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-block-end: var(--space-xs);
+  }
+  .site-footer__list {
+    display: grid;
+    gap: 0.55rem;
+    font-size: var(--step-0);
+  }
+  .site-footer__list a {
+    text-decoration: none;
+    color: var(--text);
+    transition: color var(--dur-1) var(--ease-out);
+  }
+  .site-footer__list a:hover {
+    color: var(--accent);
+  }
+  .site-footer__base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-xs);
+    margin-block-start: var(--space-l);
+    padding-block-start: var(--space-m);
+    border-block-start: 1px solid var(--line);
+    font-size: var(--step--1);
+  }
+</style>

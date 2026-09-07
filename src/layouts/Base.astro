@@ -1,0 +1,86 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import { SITE } from '../consts';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+// Polices auto-hébergées : aucun appel à un serveur tiers, rien à charger côté client
+// en plus de la police elle-même. Vite les regroupe dans le bundle CSS.
+import '@fontsource-variable/inter';
+import '@fontsource-variable/fraunces';
+import '../styles/global.css';
+
+interface Props {
+  titre?: string;
+  description?: string;
+  /** Chemin absolu de la page, pour l'URL canonique. Par défaut : Astro.url.pathname. */
+  chemin?: string;
+  /** Type Open Graph : « website » pour les pages, « article » pour une œuvre. */
+  ogType?: 'website' | 'article';
+}
+
+const {
+  titre,
+  description = SITE.description,
+  chemin = Astro.url.pathname,
+  ogType = 'website',
+} = Astro.props;
+
+const titreComplet = titre ? `${titre} — ${SITE.nom}` : SITE.nomComplet;
+const canonical = new URL(chemin, SITE.url).href;
+
+const donneesStructurees = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: SITE.nom,
+  description: SITE.description,
+  url: SITE.url,
+  email: SITE.email,
+  telephone: SITE.telephone,
+  areaServed: 'Abidjan, Côte d’Ivoire',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Abidjan',
+    addressCountry: 'CI',
+  },
+  sameAs: SITE.reseaux.map((r) => r.url),
+};
+---
+
+<!doctype html>
+<html lang={SITE.langue}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{titreComplet}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <meta name="theme-color" content="#0b0b0f" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.nom} />
+    <meta property="og:title" content={titreComplet} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="fr_CI" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={titreComplet} />
+    <meta name="twitter:description" content={description} />
+
+    <meta name="generator" content={Astro.generator} />
+    <script type="application/ld+json" set:html={JSON.stringify(donneesStructurees)} is:inline />
+
+    <ClientRouter />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">Aller au contenu</a>
+    <Header />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

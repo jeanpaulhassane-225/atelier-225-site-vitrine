@@ -1,0 +1,49 @@
+---
+interface Props {
+  titre: string;
+  texte?: string;
+  ctaLabel: string;
+  ctaHref: string;
+}
+
+const { titre, texte, ctaLabel, ctaHref } = Astro.props;
+---
+
+<section class="cta">
+  <div class="wrap cta__inner">
+    <div>
+      <h2 class="cta__title">{titre}</h2>
+      {texte && <p class="cta__texte text-dim">{texte}</p>}
+    </div>
+    <a class="btn" href={ctaHref}>{ctaLabel}</a>
+  </div>
+</section>
+
+<style>
+  .cta {
+    margin-block-start: var(--space-2xl);
+  }
+  .cta__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-l);
+    padding: clamp(2rem, 5vw, 3.5rem);
+    border-radius: var(--radius-l);
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--accent) 16%, var(--surface)),
+      var(--surface)
+    );
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+  }
+  .cta__title {
+    font-size: var(--step-3);
+    max-width: 22ch;
+  }
+  .cta__texte {
+    margin-block-start: 0.6rem;
+    max-width: 44ch;
+  }
+</style>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Atelier 225">
+  <rect width="32" height="32" rx="7" fill="#0b0b0f" />
+  <path
+    d="M4 16h2.6l1.8-6.4 2.7 13.4 2.6-10 1.7 5.2 1.4-2.6 1.5 1.8H28"
+    fill="none"
+    stroke="#f2a541"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

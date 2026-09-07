@@ -1,0 +1,96 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import CoverArt from './CoverArt.astro';
+import { annee } from '../lib/format';
+
+interface Props {
+  entry: CollectionEntry<'catalogue'>;
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const typeLabel = d.type === 'sortie' ? 'Sortie' : 'Projet';
+---
+
+<article class="card">
+  <div class="card__media">
+    <CoverArt seed={d.seed ?? entry.id} accent={d.accent} />
+  </div>
+  <div class="card__body">
+    <p class="eyebrow card__cat">{d.categorie}</p>
+    <h3 class="card__title">
+      <a href={`/catalogue/${entry.id}`}>{d.titre}</a>
+    </h3>
+    <p class="card__meta text-dim">
+      <span>{typeLabel}</span>
+      <span aria-hidden="true">·</span>
+      <span>{d.role}</span>
+      <span aria-hidden="true">·</span>
+      <span class="tnum">{annee(d.annee)}</span>
+    </p>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+    border-radius: var(--radius-l);
+    block-size: 100%;
+  }
+  .card__media {
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-inline-size: 0;
+  }
+  .card__cat {
+    color: var(--text-dim);
+    font-size: 0.72rem;
+  }
+  .card__cat::before {
+    background: var(--accent);
+    inline-size: 1.4em;
+  }
+  .card__title {
+    font-size: var(--step-2);
+  }
+  .card__title a {
+    text-decoration: none;
+    color: var(--text);
+  }
+  /* Toute la carte devient cliquable, mais un seul élément reste focusable. */
+  .card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-l);
+  }
+  .card a:focus-visible {
+    outline: none;
+  }
+  .card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    font-size: var(--step--1);
+  }
+  .card:has(a:hover) .card__media {
+    transform: translateY(-4px);
+  }
+  .card:has(a:focus-visible) {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 6px;
+  }
+  .card:has(a:hover) .card__title a {
+    color: var(--accent);
+  }
+</style>

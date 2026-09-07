@@ -1,0 +1,222 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import CatalogCard from './CatalogCard.astro';
+
+interface Props {
+  entries: CollectionEntry<'catalogue'>[];
+  filtrable?: boolean;
+}
+
+const { entries, filtrable = false } = Astro.props;
+
+const categories = [...new Set(entries.map((e) => e.data.categorie))].sort((a, b) =>
+  a.localeCompare(b, 'fr'),
+);
+const types = [
+  { value: 'tout', label: 'Tout' },
+  { value: 'sortie', label: 'Sorties' },
+  { value: 'projet', label: 'Projets' },
+];
+---
+
+<section class="catalog" data-filtrable={filtrable ? '' : undefined}>
+  {
+    filtrable && (
+      <div class="catalog__filters">
+        <fieldset class="filter-group" data-filter="type">
+          <legend class="filter-group__legend">Type</legend>
+          <div class="filter-group__chips">
+            {types.map((t, i) => (
+              <button
+                type="button"
+                class="filter-chip"
+                data-value={t.value}
+                aria-pressed={i === 0 ? 'true' : 'false'}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <fieldset class="filter-group" data-filter="categorie">
+          <legend class="filter-group__legend">Catégorie</legend>
+          <div class="filter-group__chips">
+            <button type="button" class="filter-chip" data-value="tout" aria-pressed="true">
+              Tout
+            </button>
+            {categories.map((c) => (
+              <button type="button" class="filter-chip" data-value={c} aria-pressed="false">
+                {c}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      </div>
+    )
+  }
+
+  <p class="catalog__count text-dim" role="status" aria-live="polite" data-count>
+    {entries.length}{' '}{entries.length > 1 ? 'réalisations' : 'réalisation'}
+  </p>
+
+  <ul class="catalog__grid" role="list" data-grid>
+    {
+      entries.map((entry) => (
+        <li data-type={entry.data.type} data-categorie={entry.data.categorie}>
+          <CatalogCard entry={entry} />
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="catalog__empty" data-empty hidden>
+    Aucune réalisation ne correspond à ce filtre.{' '}
+    <button type="button" class="link-arrow" data-reset>Tout afficher</button>
+  </p>
+</section>
+
+<style>
+  .catalog__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m) var(--space-l);
+    padding-block-end: var(--space-m);
+    margin-block-end: var(--space-m);
+    border-block-end: 1px solid var(--line);
+  }
+  .filter-group {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-inline-size: 0;
+  }
+  .filter-group__legend {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-block-end: 0.6rem;
+  }
+  .filter-group__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .filter-chip {
+    padding: 0.45em 0.95em;
+    border-radius: var(--radius-pill);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--text-dim);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    cursor: pointer;
+    transition:
+      color var(--dur-1) var(--ease-out),
+      background-color var(--dur-1) var(--ease-out),
+      box-shadow var(--dur-1) var(--ease-out);
+  }
+  .filter-chip:hover {
+    color: var(--text);
+  }
+  .filter-chip[aria-pressed='true'] {
+    color: var(--accent-ink);
+    background: var(--accent);
+    box-shadow: none;
+  }
+
+  .catalog__count {
+    font-size: var(--step--1);
+    margin-block-end: var(--space-m);
+  }
+
+  .catalog__grid {
+    display: grid;
+    gap: var(--space-l) var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  }
+
+  .catalog__empty {
+    margin-block-start: var(--space-l);
+    color: var(--text-dim);
+  }
+</style>
+
+<script>
+  interface FilterState {
+    type: string;
+    categorie: string;
+  }
+
+  function initCatalogFilter() {
+    const root = document.querySelector<HTMLElement>('.catalog[data-filtrable]');
+    if (!root) return;
+
+    const grid = root.querySelector<HTMLUListElement>('[data-grid]');
+    const countEl = root.querySelector<HTMLElement>('[data-count]');
+    const emptyEl = root.querySelector<HTMLElement>('[data-empty]');
+    const resetBtn = root.querySelector<HTMLButtonElement>('[data-reset]');
+    if (!grid || !countEl || !emptyEl) return;
+
+    const items = [...grid.querySelectorAll<HTMLLIElement>('li')];
+
+    const readUrl = (): FilterState => {
+      const p = new URLSearchParams(location.search);
+      return { type: p.get('type') ?? 'tout', categorie: p.get('categorie') ?? 'tout' };
+    };
+
+    const writeUrl = (state: FilterState) => {
+      const p = new URLSearchParams(location.search);
+      state.type === 'tout' ? p.delete('type') : p.set('type', state.type);
+      state.categorie === 'tout' ? p.delete('categorie') : p.set('categorie', state.categorie);
+      const qs = p.toString();
+      history.replaceState(null, '', qs ? `${location.pathname}?${qs}` : location.pathname);
+    };
+
+    const syncChips = (state: FilterState) => {
+      root.querySelectorAll<HTMLElement>('[data-filter]').forEach((group) => {
+        const key = group.dataset.filter as keyof FilterState;
+        group.querySelectorAll<HTMLButtonElement>('.filter-chip').forEach((chip) => {
+          chip.setAttribute('aria-pressed', String(chip.dataset.value === state[key]));
+        });
+      });
+    };
+
+    const apply = (state: FilterState, updateUrl = true) => {
+      let visible = 0;
+      // Lecture puis écriture groupées : on ne relit pas le layout entre deux toggles.
+      const shouldShow = items.map((li) => {
+        const okType = state.type === 'tout' || li.dataset.type === state.type;
+        const okCat = state.categorie === 'tout' || li.dataset.categorie === state.categorie;
+        return okType && okCat;
+      });
+      items.forEach((li, i) => {
+        li.hidden = !shouldShow[i];
+        if (shouldShow[i]) visible++;
+      });
+
+      countEl.textContent = `${visible} ${visible > 1 ? 'réalisations' : 'réalisation'}`;
+      emptyEl.hidden = visible !== 0;
+      syncChips(state);
+      if (updateUrl) writeUrl(state);
+    };
+
+    root.querySelectorAll<HTMLElement>('[data-filter]').forEach((group) => {
+      const key = group.dataset.filter as keyof FilterState;
+      group.addEventListener('click', (e) => {
+        const chip = (e.target as HTMLElement).closest<HTMLButtonElement>('.filter-chip');
+        if (!chip) return;
+        const state = readUrl();
+        state[key] = chip.dataset.value ?? 'tout';
+        apply(state);
+      });
+    });
+
+    resetBtn?.addEventListener('click', () => apply({ type: 'tout', categorie: 'tout' }));
+
+    // État initial : depuis l'URL, sans la réécrire.
+    apply(readUrl(), false);
+  }
+
+  document.addEventListener('astro:page-load', initCatalogFilter);
+</script>

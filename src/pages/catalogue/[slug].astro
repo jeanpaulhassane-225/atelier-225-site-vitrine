@@ -1,0 +1,218 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CoverArt from '../../components/CoverArt.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import { annee } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const entries = (await getCollection('catalogue')).sort(
+    (a, b) => a.data.ordre - b.data.ordre || b.data.annee - a.data.annee,
+  );
+  return entries.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: entries[i - 1] ?? null,
+      next: entries[i + 1] ?? null,
+    },
+  }));
+}
+
+const { entry, prev, next } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const typeLabel = d.type === 'sortie' ? 'Sortie' : 'Projet';
+
+const meta: { k: string; v: string }[] = [
+  { k: 'Type', v: typeLabel },
+  { k: 'Catégorie', v: d.categorie },
+  { k: 'Rôle', v: d.role },
+  ...(d.client ? [{ k: 'Client', v: d.client }] : []),
+  { k: 'Année', v: annee(d.annee) },
+  ...(d.duree ? [{ k: 'Durée', v: d.duree }] : []),
+];
+---
+
+<Base
+  titre={d.titre}
+  description={d.resume}
+  chemin={`/catalogue/${entry.id}`}
+  ogType="article"
+>
+  <article>
+    <header class="oeuvre-header wrap">
+      <p class="eyebrow">{d.categorie}</p>
+      <h1 class="oeuvre-header__title">{d.titre}</h1>
+      <p class="oeuvre-header__resume text-dim">{d.resume}</p>
+    </header>
+
+    <div class="wrap oeuvre-cover">
+      <CoverArt seed={d.seed ?? entry.id} accent={d.accent} variant="feature" />
+    </div>
+
+    <div class="wrap oeuvre-body">
+      <div class="oeuvre-content prose">
+        <Content />
+
+        {
+          d.credits.length > 0 && (
+            <Fragment>
+              <h2>Crédits</h2>
+              <ul>
+                {d.credits.map((c) => (
+                  <li>
+                    <strong>{c.role}</strong> — {c.nom}
+                  </li>
+                ))}
+              </ul>
+            </Fragment>
+          )
+        }
+
+        {
+          d.liens.length > 0 && (
+            <p class="oeuvre-liens">
+              {d.liens.map((l) => (
+                <a class="btn btn--ghost" href={l.url} target="_blank" rel="noopener">
+                  {l.label}
+                </a>
+              ))}
+            </p>
+          )
+        }
+      </div>
+
+      <aside class="oeuvre-meta" aria-label="Fiche technique">
+        <dl>
+          {
+            meta.map((m) => (
+              <div class="oeuvre-meta__row">
+                <dt>{m.k}</dt>
+                <dd class:list={[m.k === 'Année' && 'tnum']}>{m.v}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </aside>
+    </div>
+
+    <nav class="wrap oeuvre-nav" aria-label="Autres réalisations">
+      {
+        prev ? (
+          <a class="oeuvre-nav__link" href={`/catalogue/${prev.id}`} rel="prev">
+            <span class="text-dim">Précédent</span>
+            <span class="oeuvre-nav__t">{prev.data.titre}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next ? (
+          <a class="oeuvre-nav__link oeuvre-nav__link--next" href={`/catalogue/${next.id}`} rel="next">
+            <span class="text-dim">Suivant</span>
+            <span class="oeuvre-nav__t">{next.data.titre}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+    </nav>
+  </article>
+
+  <div class="wrap">
+    <CtaBand
+      titre="Envie d’un rendu comme celui-ci&nbsp;?"
+      ctaLabel="Parler de votre projet"
+      ctaHref="/contact"
+    />
+  </div>
+</Base>
+
+<style>
+  .oeuvre-header {
+    padding-block: clamp(2.5rem, 7vw, 4.5rem) var(--space-l);
+  }
+  .oeuvre-header__title {
+    margin-block: 0.6rem 0;
+    max-width: 20ch;
+  }
+  .oeuvre-header__resume {
+    margin-block-start: var(--space-m);
+    font-size: var(--step-1);
+    max-width: 54ch;
+  }
+  .oeuvre-cover {
+    margin-block-end: var(--space-xl);
+  }
+  .oeuvre-cover :global(.cover) {
+    border-radius: var(--radius-l);
+    box-shadow: var(--shadow-2), inset 0 0 0 1px var(--line);
+  }
+
+  .oeuvre-body {
+    display: grid;
+    gap: var(--space-xl) var(--space-2xl);
+  }
+  @media (min-width: 54rem) {
+    .oeuvre-body {
+      grid-template-columns: 1fr 16rem;
+      align-items: start;
+    }
+  }
+
+  .oeuvre-liens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    margin-block-start: var(--space-l);
+  }
+
+  .oeuvre-meta {
+    position: sticky;
+    inset-block-start: calc(var(--header-h) + var(--space-m));
+    font-size: var(--step--1);
+  }
+  .oeuvre-meta__row {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-s);
+    padding-block: 0.7rem;
+    border-block-start: 1px solid var(--line);
+  }
+  .oeuvre-meta dt {
+    color: var(--text-dim);
+  }
+  .oeuvre-meta dd {
+    text-align: end;
+    font-weight: 600;
+  }
+
+  .oeuvre-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-m);
+    margin-block-start: var(--space-2xl);
+    padding-block-start: var(--space-l);
+    border-block-start: 1px solid var(--line);
+  }
+  .oeuvre-nav__link {
+    display: grid;
+    gap: 0.2rem;
+    text-decoration: none;
+    font-size: var(--step--1);
+    max-inline-size: 20ch;
+  }
+  .oeuvre-nav__link--next {
+    text-align: end;
+  }
+  .oeuvre-nav__t {
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    color: var(--text);
+  }
+  .oeuvre-nav__link:hover .oeuvre-nav__t {
+    color: var(--accent);
+  }
+</style>

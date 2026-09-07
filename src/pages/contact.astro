@@ -1,0 +1,105 @@
+---
+import Base from '../layouts/Base.astro';
+import ContactForm from '../components/ContactForm.astro';
+import { SITE } from '../consts';
+import { lienTel } from '../lib/format';
+---
+
+<Base
+  titre="Contact"
+  description="Parlez-nous de votre projet de son, d’image ou de récit. Devis chiffré sous 48 h ouvrées."
+  chemin="/contact"
+>
+  <header class="page-header wrap">
+    <p class="eyebrow">Contact</p>
+    <h1 class="page-header__title">Démarrer un projet</h1>
+    <p class="page-header__lede">
+      Le calendrier, le budget indicatif, deux ou trois références qui vous
+      parlent : c’est déjà assez pour qu’on réponde utile.
+    </p>
+  </header>
+
+  <div class="section wrap contact-grid">
+    <ContactForm />
+
+    <aside class="contact-info" aria-label="Coordonnées directes">
+      <h2 class="contact-info__title">En direct</h2>
+      <ul role="list" class="contact-info__list">
+        <li>
+          <span class="text-dim">E-mail</span>
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        </li>
+        <li>
+          <span class="text-dim">Téléphone</span>
+          <a href={lienTel(SITE.telephone)}>{SITE.telephone}</a>
+        </li>
+        <li>
+          <span class="text-dim">Studio</span>
+          <span>{SITE.ville}</span>
+        </li>
+      </ul>
+
+      <h2 class="contact-info__title">Suivre</h2>
+      <ul role="list" class="contact-info__list">
+        {
+          SITE.reseaux.map((r) => (
+            <li>
+              <a href={r.url} target="_blank" rel="noopener">
+                {r.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="text-dim contact-info__delai">Réponse sous 48&nbsp;h ouvrées.</p>
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .contact-grid {
+    display: grid;
+    gap: var(--space-2xl) var(--space-2xl);
+  }
+  @media (min-width: 56rem) {
+    .contact-grid {
+      grid-template-columns: 1fr 15rem;
+      align-items: start;
+    }
+  }
+  .contact-info__title {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-block-end: var(--space-xs);
+  }
+  .contact-info__title:not(:first-child) {
+    margin-block-start: var(--space-l);
+  }
+  .contact-info__list {
+    display: grid;
+    gap: 0.7rem;
+  }
+  .contact-info__list li {
+    display: grid;
+    gap: 0.1rem;
+  }
+  .contact-info__list span.text-dim {
+    font-size: var(--step--1);
+  }
+  .contact-info__list a {
+    text-decoration: none;
+    color: var(--text);
+  }
+  .contact-info__list a:hover {
+    color: var(--accent);
+  }
+  .contact-info__delai {
+    margin-block-start: var(--space-l);
+    font-size: var(--step--1);
+  }
+</style>

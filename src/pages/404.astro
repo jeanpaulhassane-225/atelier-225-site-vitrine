@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base titre="Page introuvable" description="Cette page n’existe pas ou a été déplacée.">
+  <section class="section wrap wrap--narrow notfound">
+    <p class="eyebrow">Erreur 404</p>
+    <h1 class="notfound__title">Cette page a changé de fréquence</h1>
+    <p class="text-dim notfound__lede">
+      Le lien est cassé ou la page a été déplacée. Reprenons depuis un point stable.
+    </p>
+    <div class="notfound__actions">
+      <a class="btn" href="/">Retour à l’accueil</a>
+      <a class="btn btn--ghost" href="/catalogue">Voir le catalogue</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .notfound {
+    padding-block: clamp(4rem, 12vw, 8rem);
+  }
+  .notfound__title {
+    margin-block: 0.6rem 0;
+  }
+  .notfound__lede {
+    margin-block-start: var(--space-m);
+    font-size: var(--step-1);
+  }
+  .notfound__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-s);
+    margin-block-start: var(--space-l);
+  }
+</style>

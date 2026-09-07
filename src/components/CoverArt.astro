@@ -1,0 +1,215 @@
+---
+import { alea } from '../lib/seededRandom';
+
+/**
+ * Pochette générative.
+ *
+ * À partir d'une graine texte + une couleur d'accent, on compose un visuel
+ * SVG unique et reproductible : halos flous, anneaux « ondes », champ de
+ * barres facon spectre, grain. Aucun fichier image, rendu identique à chaque
+ * build. Pour utiliser une vraie photo à la place, voir le README.
+ */
+
+interface Props {
+  seed: string;
+  accent: string;
+  variant?: 'grid' | 'feature';
+  class?: string;
+}
+
+const { seed, accent, variant = 'grid', class: className } = Astro.props;
+
+const PALETTE = [
+  '#F2A541',
+  '#FFBC57',
+  '#D9553B',
+  '#3FA7A1',
+  '#8A6CF0',
+  '#B6D94C',
+  '#E86A92',
+  '#4C86D9',
+];
+
+const r = alea(`${seed}::${accent}`);
+const uid = `cv-${seed.replace(/[^a-z0-9]/gi, '').slice(0, 10).toLowerCase()}-${r.int(1000, 9999)}`;
+const companion = r.pick(PALETTE.filter((c) => c.toLowerCase() !== accent.toLowerCase()));
+
+const W = 600;
+const H = 450;
+
+const gAngle = r.int(0, 359);
+
+const cx = r.range(W * 0.34, W * 0.78);
+const cy = r.range(H * 0.16, H * 0.62);
+const ringCount = r.int(5, 9);
+const ring0 = r.range(46, 84);
+const ringStep = r.range(24, 42);
+const ringWidth = r.range(1, 2.4);
+const rings = Array.from({ length: ringCount }, (_, i) => ({
+  radius: ring0 + i * ringStep,
+  opacity: 0.52 - i * (0.36 / ringCount),
+  dash: r.chance(0.35) ? `${r.int(3, 10)} ${r.int(6, 16)}` : undefined,
+}));
+
+const barCount = 36;
+const barLeft = 54;
+const barRight = W - 54;
+const barBase = r.range(H * 0.86, H * 0.94);
+const barSlot = (barRight - barLeft) / barCount;
+const peaks = new Set([r.int(4, 10), r.int(14, 22), r.int(24, 32)]);
+const bars = Array.from({ length: barCount }, (_, i) => {
+  const shaped = Math.pow(r.next(), 1.8);
+  const h = peaks.has(i) ? r.range(150, 230) : 8 + shaped * 96;
+  return { x: barLeft + i * barSlot + barSlot * 0.18, w: barSlot * 0.5, h };
+});
+
+const glowA = {
+  cx: r.range(80, W - 80),
+  cy: r.range(40, H * 0.5),
+  rx: r.range(150, 250),
+  ry: r.range(120, 210),
+};
+const glowB = {
+  cx: r.range(80, W - 80),
+  cy: r.range(H * 0.4, H - 40),
+  rx: r.range(150, 260),
+  ry: r.range(120, 220),
+};
+
+const ruleX = r.pick([90, 130, W - 130, W - 90]);
+---
+
+<div class:list={['cover', className]} data-variant={variant} aria-hidden="true">
+  <svg
+    viewBox={`0 0 ${W} ${H}`}
+    width={W}
+    height={H}
+    preserveAspectRatio="xMidYMid slice"
+    role="presentation"
+  >
+    <defs>
+      <linearGradient
+        id={`${uid}-bg`}
+        gradientUnits="userSpaceOnUse"
+        x1="0"
+        y1="0"
+        x2={W}
+        y2={H}
+        gradientTransform={`rotate(${gAngle} ${W / 2} ${H / 2})`}
+      >
+        <stop offset="0" stop-color="#16161f" />
+        <stop offset="1" stop-color="#0a0a0e" />
+      </linearGradient>
+      <filter id={`${uid}-blur`} x="-40%" y="-40%" width="180%" height="180%">
+        <feGaussianBlur stdDeviation="34" />
+      </filter>
+    </defs>
+
+    <rect width={W} height={H} fill={`url(#${uid}-bg)`}></rect>
+
+    <g style="mix-blend-mode: screen">
+      <ellipse
+        cx={glowA.cx}
+        cy={glowA.cy}
+        rx={glowA.rx}
+        ry={glowA.ry}
+        fill={accent}
+        opacity="0.5"
+        filter={`url(#${uid}-blur)`}
+      ></ellipse>
+      <ellipse
+        cx={glowB.cx}
+        cy={glowB.cy}
+        rx={glowB.rx}
+        ry={glowB.ry}
+        fill={companion}
+        opacity="0.42"
+        filter={`url(#${uid}-blur)`}
+      ></ellipse>
+    </g>
+
+    <g fill="none" stroke={accent} stroke-width={ringWidth}>
+      {
+        rings.map((ring) => (
+          <circle
+            cx={cx}
+            cy={cy}
+            r={ring.radius}
+            opacity={ring.opacity}
+            stroke-dasharray={ring.dash}
+          />
+        ))
+      }
+      <circle cx={cx} cy={cy} r={ring0 * 0.42} fill={accent} fill-opacity="0.16" stroke="none"></circle>
+    </g>
+
+    <line
+      x1={ruleX}
+      y1="24"
+      x2={ruleX}
+      y2={H - 24}
+      stroke={accent}
+      stroke-opacity="0.22"
+      stroke-width="1"></line>
+
+    <g fill={accent}>
+      {
+        bars.map((bar) => (
+          <rect
+            x={bar.x}
+            y={barBase - bar.h}
+            width={bar.w}
+            height={bar.h}
+            rx={bar.w / 2}
+            opacity={bar.h > 140 ? 0.95 : 0.7}
+          />
+        ))
+      }
+    </g>
+
+    <text
+      x="46"
+      y={H - 28}
+      font-family="Georgia, 'Times New Roman', serif"
+      font-size="34"
+      fill={accent}
+      fill-opacity="0.14"
+      letter-spacing="4">225</text>
+  </svg>
+</div>
+
+<style>
+  .cover {
+    position: relative;
+    overflow: hidden;
+    background: var(--ink-850);
+    border-radius: inherit;
+  }
+  /* Vignette : de la profondeur sans filtre ni fondu coûteux. */
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      130% 130% at 28% 18%,
+      transparent 38%,
+      rgb(0 0 0 / 0.38) 100%
+    );
+  }
+  .cover[data-variant='grid'] {
+    aspect-ratio: 4 / 3;
+  }
+  .cover[data-variant='feature'] {
+    aspect-ratio: 16 / 10;
+  }
+  .cover svg {
+    width: 100%;
+    height: 100%;
+  }
+  @media (min-width: 60rem) {
+    .cover[data-variant='feature'] {
+      aspect-ratio: 21 / 9;
+    }
+  }
+</style>

@@ -1,0 +1,77 @@
+---
+import Base from '../layouts/Base.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { SERVICES, PROCESS } from '../consts';
+---
+
+<Base
+  titre="Services"
+  description="Production musicale, ingénierie du son, sound design, réalisation audiovisuelle et publi-reportage : les prestations d’Atelier 225."
+  chemin="/services"
+>
+  <header class="page-header wrap">
+    <p class="eyebrow">Services</p>
+    <h1 class="page-header__title">Cinq métiers, une seule adresse</h1>
+    <p class="page-header__lede">
+      On prend un projet en entier ou une brique précise. Dans les deux cas, même
+      exigence sur l’écoute de départ et sur la propreté des fichiers livrés.
+    </p>
+  </header>
+
+  <section class="section wrap" aria-label="Liste des services">
+    {SERVICES.map((service, i) => <ServiceCard service={service} index={i} detaille />)}
+  </section>
+
+  <section class="section wrap wrap--narrow" aria-labelledby="process-titre">
+    <p class="eyebrow">Comment on travaille</p>
+    <h2 id="process-titre" class="section-lede">Quatre temps, sans zone grise.</h2>
+    <ol class="process" role="list">
+      {
+        PROCESS.map((etape, i) => (
+          <li class="process__step">
+            <span class="process__num tnum" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <div>
+              <h3 class="process__titre">{etape.titre}</h3>
+              <p class="text-dim">{etape.texte}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  <div class="wrap">
+    <CtaBand
+      titre="Une brique ou le projet entier ?"
+      texte="Décrivez le besoin, on revient avec une proposition chiffrée et un calendrier."
+      ctaLabel="Demander un devis"
+      ctaHref="/contact"
+    />
+  </div>
+</Base>
+
+<style>
+  .process {
+    display: grid;
+    gap: var(--space-l);
+    margin-block-start: var(--space-l);
+  }
+  .process__step {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-m);
+  }
+  .process__num {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    color: var(--accent);
+    line-height: 1;
+  }
+  .process__titre {
+    font-size: var(--step-1);
+    margin-block-end: 0.35rem;
+  }
+</style>

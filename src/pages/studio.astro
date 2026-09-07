@@ -1,0 +1,162 @@
+---
+import Base from '../layouts/Base.astro';
+import CoverArt from '../components/CoverArt.astro';
+import CtaBand from '../components/CtaBand.astro';
+
+const reperes = [
+  { chiffre: '5', label: 'métiers réunis sous un même toit' },
+  { chiffre: '48 h', label: 'pour un devis chiffré' },
+  { chiffre: '225', label: 'Abidjan, indicatif et point de départ' },
+];
+
+const materiel = [
+  'Cabine de prise traitée acoustiquement',
+  'Chaîne micro à lampe et préamplis discrets',
+  'Écoute principale + écoute secondaire pour la translation',
+  'Station de mixage et de montage image',
+  'Kit tournage léger : boîtiers hybrides, optiques fixes, son embarqué',
+];
+---
+
+<Base
+  titre="Studio"
+  description="Atelier 225, studio de création sonore, visuelle et éditoriale basé à Abidjan. Notre approche, notre équipe, notre matériel."
+  chemin="/studio"
+>
+  <header class="page-header wrap">
+    <p class="eyebrow">Le studio</p>
+    <h1 class="page-header__title">Abidjan, au contact d’une scène qui va vite</h1>
+    <p class="page-header__lede">
+      Atelier 225 est né d’une envie simple : arrêter de disperser un projet entre
+      cinq prestataires qui ne se parlent pas, et le mener d’un bout à l’autre avec
+      les mêmes personnes.
+    </p>
+  </header>
+
+  <section class="section wrap studio-grid" aria-labelledby="approche-titre">
+    <div class="prose">
+      <h2 id="approche-titre">Notre approche</h2>
+      <p>
+        On part toujours de l’écoute : une référence, une intention, un public. De
+        là, on pose une direction claire et des jalons, puis on produit sans zone
+        grise. Les allers-retours sont cadrés, les validations écrites, et rien
+        n’avance tant qu’une étape n’est pas actée.
+      </p>
+      <p>
+        On aime les projets où le son, l’image et le texte se répondent : un
+        morceau et son clip, une marque et son identité sonore, un métier et le
+        reportage qui le raconte. C’est là qu’une équipe unique fait vraiment la
+        différence.
+      </p>
+      <h2>L’équipe</h2>
+      <p>
+        Un noyau de personnes qui produisent de la musique, prennent et mixent du
+        son, cadrent et montent de l’image depuis des années. Selon le projet, on
+        s’entoure d’intervenants de confiance, brieffés par nous et responsables
+        devant nous.
+      </p>
+    </div>
+    <div class="studio-visual">
+      <CoverArt seed="atelier-225-studio" accent="#3FA7A1" variant="feature" />
+    </div>
+  </section>
+
+  <section class="section wrap" aria-label="En bref">
+    <ul class="reperes" role="list">
+      {
+        reperes.map((r) => (
+          <li class="repere">
+            <span class="repere__chiffre tnum">{r.chiffre}</span>
+            <span class="repere__label text-dim">{r.label}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="section wrap wrap--narrow" aria-labelledby="materiel-titre">
+    <p class="eyebrow">Matériel</p>
+    <h2 id="materiel-titre" class="section-lede">De quoi tenir la chaîne, de la prise au master.</h2>
+    <ul class="materiel" role="list">
+      {materiel.map((item) => <li>{item}</li>)}
+    </ul>
+    <p class="text-dim materiel__note">
+      Le parc évolue avec les projets. Un besoin précis&nbsp;? On le prévoit au devis.
+    </p>
+  </section>
+
+  <div class="wrap">
+    <CtaBand
+      titre="On regarde votre projet ensemble ?"
+      ctaLabel="Nous écrire"
+      ctaHref="/contact"
+    />
+  </div>
+</Base>
+
+<style>
+  .studio-grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+  @media (min-width: 56rem) {
+    .studio-grid {
+      grid-template-columns: 1fr 0.85fr;
+      align-items: start;
+    }
+  }
+  .studio-visual {
+    border-radius: var(--radius-l);
+    overflow: hidden;
+    box-shadow: var(--shadow-2), inset 0 0 0 1px var(--line);
+  }
+
+  .reperes {
+    display: grid;
+    gap: var(--space-m);
+    padding-block: var(--space-l);
+    border-block: 1px solid var(--line);
+  }
+  @media (min-width: 44rem) {
+    .reperes {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .repere {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .repere__chiffre {
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    color: var(--accent);
+    line-height: 1;
+  }
+  .repere__label {
+    max-width: 22ch;
+  }
+
+  .materiel {
+    display: grid;
+    gap: 0.6rem;
+    margin-block-start: var(--space-m);
+    max-width: 52ch;
+  }
+  .materiel li {
+    padding-inline-start: 1.5em;
+    position: relative;
+  }
+  .materiel li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.62em;
+    inline-size: 0.7em;
+    block-size: 2px;
+    background: var(--accent);
+  }
+  .materiel__note {
+    margin-block-start: var(--space-m);
+    font-size: var(--step--1);
+  }
+</style>

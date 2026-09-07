@@ -1,0 +1,28 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import CatalogGrid from '../../components/CatalogGrid.astro';
+
+const entries = (await getCollection('catalogue')).sort(
+  (a, b) => a.data.ordre - b.data.ordre || b.data.annee - a.data.annee,
+);
+---
+
+<Base
+  titre="Catalogue"
+  description="Sorties et projets clients d’Atelier 225 : musique, ingénierie du son, sound design, audiovisuel et publi-reportage."
+  chemin="/catalogue"
+>
+  <header class="page-header wrap">
+    <p class="eyebrow">Catalogue</p>
+    <h1 class="page-header__title">Sorties &amp; projets</h1>
+    <p class="page-header__lede">
+      Un aperçu du travail du studio, des productions signées Atelier 225 aux
+      commandes de marques et d’artistes. Filtrez par type ou par métier.
+    </p>
+  </header>
+
+  <div class="section wrap">
+    <CatalogGrid entries={entries} filtrable />
+  </div>
+</Base>

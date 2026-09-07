@@ -1,0 +1,338 @@
+---
+import { SITE } from '../consts';
+
+const endpoint = SITE.formulaireEndpoint.trim();
+// Sans endpoint configuré : repli sur un courriel pré-rempli, aucun serveur requis.
+const action = endpoint || `mailto:${SITE.email}?subject=${encodeURIComponent('Projet — via le site')}`;
+
+const sujets = [
+  'Production musicale',
+  'Ingénierie du son',
+  'Sound design & habillage',
+  'Réalisation audiovisuelle',
+  'Publi-reportage',
+  'Autre',
+];
+---
+
+<form
+  class="form"
+  action={action}
+  method="post"
+  enctype={endpoint ? 'application/x-www-form-urlencoded' : 'text/plain'}
+  novalidate
+  data-endpoint={endpoint || undefined}
+  data-email={SITE.email}
+>
+  <!-- Piège à robots : invisible, ignoré des lecteurs d'écran, doit rester vide. -->
+  <div class="form__hp" aria-hidden="true">
+    <label>Ne pas remplir<input type="text" name="_pot" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  <div class="form__row">
+    <div class="field">
+      <label for="f-nom">Nom</label>
+      <input
+        id="f-nom"
+        name="nom"
+        type="text"
+        autocomplete="name"
+        required
+        aria-describedby="e-nom"
+        placeholder="Aya Koné…"
+      />
+      <p class="field__error" id="e-nom" hidden></p>
+    </div>
+
+    <div class="field">
+      <label for="f-email">Adresse e-mail</label>
+      <input
+        id="f-email"
+        name="email"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        spellcheck="false"
+        required
+        aria-describedby="e-email"
+        placeholder="vous@exemple.ci…"
+      />
+      <p class="field__error" id="e-email" hidden></p>
+    </div>
+  </div>
+
+  <div class="form__row">
+    <div class="field">
+      <label for="f-orga">Structure <span class="field__opt">(facultatif)</span></label>
+      <input
+        id="f-orga"
+        name="organisation"
+        type="text"
+        autocomplete="organization"
+        placeholder="Label, marque, collectif…"
+      />
+    </div>
+
+    <div class="field">
+      <label for="f-sujet">Sujet</label>
+      <select id="f-sujet" name="sujet" required>
+        {sujets.map((s) => <option value={s}>{s}</option>)}
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="f-message">Votre projet</label>
+    <textarea
+      id="f-message"
+      name="message"
+      rows="6"
+      required
+      autocomplete="off"
+      aria-describedby="e-message"
+      placeholder="Le projet, le calendrier, les références qui vous parlent…"></textarea>
+    <p class="field__error" id="e-message" hidden></p>
+  </div>
+
+  <label class="check">
+    <input type="checkbox" name="consentement" required aria-describedby="e-consent" />
+    <span
+      >J’accepte qu’Atelier 225 utilise ces informations pour répondre à ma demande.</span
+    >
+  </label>
+  <p class="field__error" id="e-consent" hidden></p>
+
+  <div class="form__foot">
+    <button type="submit" class="btn form__submit">Envoyer le message</button>
+    <p class="form__status" role="status" aria-live="polite" data-status></p>
+  </div>
+
+  <noscript>
+    <p class="text-dim form__noscript">
+      Le formulaire fonctionne sans JavaScript. Vous pouvez aussi écrire directement à
+      <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+    </p>
+  </noscript>
+</form>
+
+<style>
+  .form {
+    display: grid;
+    gap: var(--space-m);
+    max-width: 44rem;
+  }
+  .form__hp {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .form__row {
+    display: grid;
+    gap: var(--space-m);
+  }
+  @media (min-width: 40rem) {
+    .form__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    min-inline-size: 0;
+  }
+  .field label {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .field__opt {
+    font-weight: 400;
+    color: var(--text-dim);
+  }
+
+  .field :where(input, select, textarea) {
+    inline-size: 100%;
+    padding: 0.7em 0.85em;
+    border-radius: var(--radius-m);
+    background-color: var(--surface-2);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+    transition:
+      box-shadow var(--dur-1) var(--ease-out),
+      background-color var(--dur-1) var(--ease-out);
+  }
+  .field textarea {
+    resize: vertical;
+    min-block-size: 7rem;
+  }
+  .field :where(input, select, textarea):focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--accent-strong);
+  }
+  .field :where(input, select, textarea)[aria-invalid='true'] {
+    box-shadow: inset 0 0 0 2px var(--accent-2);
+  }
+  /* Contraste des menus déroulants sous Windows en thème sombre. */
+  .field select,
+  .field option {
+    background-color: var(--surface-2);
+    color: var(--text);
+  }
+  .field ::placeholder {
+    color: var(--paper-faint);
+  }
+
+  .field__error {
+    font-size: var(--step--1);
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+
+  .check {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.7em;
+    align-items: start;
+    font-size: var(--step--1);
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  .check input {
+    inline-size: 1.15rem;
+    block-size: 1.15rem;
+    margin-block-start: 0.15em;
+    accent-color: var(--accent);
+  }
+
+  .form__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-m);
+  }
+  .form__submit[aria-busy='true'] {
+    opacity: 0.75;
+    pointer-events: none;
+  }
+  .form__status:empty {
+    display: none;
+  }
+  .form__status[data-tone='ok'] {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .form__status[data-tone='error'] {
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+  .form__noscript {
+    font-size: var(--step--1);
+  }
+</style>
+
+<script>
+  function initContactForm() {
+    const form = document.querySelector<HTMLFormElement>('.form');
+    if (!form || form.dataset.wired) return;
+    form.dataset.wired = 'true';
+
+    const status = form.querySelector<HTMLElement>('[data-status]')!;
+    const submit = form.querySelector<HTMLButtonElement>('.form__submit')!;
+    const endpoint = form.dataset.endpoint;
+
+    // Chaque champ pointe vers son message d'erreur via aria-describedby :
+    // on s'appuie sur ce lien plutôt que sur la position dans le DOM.
+    const errorBox = (field: HTMLElement): HTMLElement | null => {
+      const id = field.getAttribute('aria-describedby');
+      return id ? document.getElementById(id) : null;
+    };
+    const setError = (field: HTMLElement, message: string) => {
+      field.setAttribute('aria-invalid', 'true');
+      const box = errorBox(field);
+      if (box) {
+        box.textContent = message;
+        box.hidden = false;
+      }
+    };
+    const clearError = (field: HTMLElement) => {
+      field.removeAttribute('aria-invalid');
+      const box = errorBox(field);
+      if (box) box.hidden = true;
+    };
+
+    const controls = [...form.querySelectorAll<HTMLElement>('input, select, textarea')];
+    controls.forEach((el) => el.addEventListener('input', () => clearError(el)));
+
+    const validate = (): HTMLElement | null => {
+      let firstBad: HTMLElement | null = null;
+      const fail = (el: HTMLElement, msg: string) => {
+        setError(el, msg);
+        firstBad ??= el;
+      };
+
+      const nom = form.elements.namedItem('nom') as HTMLInputElement;
+      const email = form.elements.namedItem('email') as HTMLInputElement;
+      const message = form.elements.namedItem('message') as HTMLTextAreaElement;
+      const consent = form.elements.namedItem('consentement') as HTMLInputElement;
+
+      if (!nom.value.trim()) fail(nom, 'Indiquez votre nom.');
+      if (!email.value.trim()) fail(email, 'Indiquez votre adresse e-mail.');
+      else if (!email.checkValidity()) fail(email, 'Cette adresse e-mail semble incomplète.');
+      if (message.value.trim().length < 10)
+        fail(message, 'Décrivez le projet en quelques mots (10 caractères minimum).');
+      if (!consent.checked) fail(consent, 'Cochez cette case pour envoyer votre demande.');
+
+      return firstBad;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      const bad = validate();
+      if (bad) {
+        e.preventDefault();
+        bad.focus();
+        status.textContent = 'Quelques champs demandent une correction.';
+        status.dataset.tone = 'error';
+        return;
+      }
+
+      // Piège à robots rempli : on abandonne en silence.
+      if ((form.elements.namedItem('_pot') as HTMLInputElement)?.value) {
+        e.preventDefault();
+        return;
+      }
+
+      // Pas d'endpoint : on laisse le navigateur ouvrir le client mail.
+      if (!endpoint) return;
+
+      e.preventDefault();
+      submit.setAttribute('aria-busy', 'true');
+      submit.textContent = 'Envoi…';
+      status.textContent = '';
+      delete status.dataset.tone;
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        status.textContent = 'Message envoyé. Réponse sous 48 h ouvrées.';
+        status.dataset.tone = 'ok';
+      } catch {
+        status.textContent = `Envoi impossible pour le moment. Écrivez-nous à ${form.dataset.email ?? ''}.`;
+        status.dataset.tone = 'error';
+      } finally {
+        submit.removeAttribute('aria-busy');
+        submit.textContent = 'Envoyer le message';
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', initContactForm);
+</script>

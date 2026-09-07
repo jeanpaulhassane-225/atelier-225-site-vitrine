@@ -1,0 +1,76 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import CatalogGrid from '../components/CatalogGrid.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Arrow from '../components/Arrow.astro';
+import { SERVICES } from '../consts';
+
+const toutes = await getCollection('catalogue');
+const parOrdre = toutes.sort(
+  (a, b) => a.data.ordre - b.data.ordre || b.data.annee - a.data.annee,
+);
+const aLaUne = parOrdre.filter((e) => e.data.aLaUne).slice(0, 4);
+const enAvant = aLaUne.length >= 3 ? aLaUne : parOrdre.slice(0, 4);
+---
+
+<Base>
+  <Hero />
+
+  <section class="section wrap" aria-labelledby="services-titre">
+    <p class="eyebrow">Ce qu’on fait</p>
+    <h2 id="services-titre" class="section-lede">
+      Cinq métiers, une même équipe, du repérage à la livraison.
+    </h2>
+    <div>
+      {SERVICES.map((service, i) => <ServiceCard service={service} index={i} />)}
+    </div>
+    <p class="section-more">
+      <a class="link-arrow" href="/services">Voir le détail des services <Arrow /></a>
+    </p>
+  </section>
+
+  <section class="section wrap" aria-labelledby="une-titre">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">À la une</p>
+        <h2 id="une-titre" class="section-lede">Quelques réalisations récentes.</h2>
+      </div>
+      <a class="link-arrow" href="/catalogue">Tout le catalogue <Arrow /></a>
+    </div>
+    <CatalogGrid entries={enAvant} />
+  </section>
+
+  <section class="section wrap wrap--narrow" aria-labelledby="studio-titre">
+    <p class="eyebrow">Le studio</p>
+    <h2 id="studio-titre">Basés à Abidjan, au contact d’une scène qui va vite.</h2>
+    <p class="text-dim studio-teaser__p">
+      Atelier 225 réunit des personnes qui font de la musique, du son et de l’image
+      depuis longtemps, et qui aiment travailler ensemble sur un même projet plutôt
+      qu’en sous-traitance éclatée. On avance par jalons, avec des points d’étape
+      réguliers et des masters livrés propres.
+    </p>
+    <a class="link-arrow" href="/studio">Découvrir le studio <Arrow /></a>
+  </section>
+
+  <div class="wrap">
+    <CtaBand
+      titre="Un projet de son, d’image ou de récit ?"
+      texte="Parlez-nous du calendrier et des références. Devis clair sous 48 h ouvrées."
+      ctaLabel="Démarrer un projet"
+      ctaHref="/contact"
+    />
+  </div>
+</Base>
+
+<style>
+  .section-more {
+    margin-block-start: var(--space-l);
+  }
+  .studio-teaser__p {
+    font-size: var(--step-1);
+    margin-block: var(--space-m) var(--space-l);
+  }
+</style>
