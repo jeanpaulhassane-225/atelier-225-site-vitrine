@@ -71,7 +71,11 @@ const donneesStructurees = {
     <meta name="twitter:description" content={description} />
 
     <meta name="generator" content={Astro.generator} />
-    <script type="application/ld+json" set:html={JSON.stringify(donneesStructurees)} is:inline />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(donneesStructurees).replace(/</g, '\\u003c')}
+      is:inline
+    />
 
     <ClientRouter />
   </head>

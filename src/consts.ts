@@ -45,6 +45,7 @@ export const NAV = [
   { label: 'Studio', href: '/studio' },
   { label: 'Services', href: '/services' },
   { label: 'Catalogue', href: '/catalogue' },
+  { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' },
 ] as const;
 
@@ -145,3 +146,116 @@ export const PROCESS = [
     texte: 'Masters et fichiers sources remis, formats adaptés à chaque canal de diffusion.',
   },
 ] as const;
+
+export interface FaqItem {
+  /** Regroupement thématique, affiché comme intertitre sur la page FAQ. */
+  theme: string;
+  question: string;
+  reponse: string;
+}
+
+/**
+ * Questions fréquentes de la page FAQ, dans l'ordre d'affichage.
+ * Les items d'un même thème doivent rester groupés (la page les regroupe par
+ * ordre de première apparition, sans tri supplémentaire).
+ *
+ * Notes de contenu, à garder en tête pour les prochaines relectures :
+ * - Tarifs : uniquement des fourchettes indicatives (« à partir de », « entre X et Y »).
+ *   Le chiffrage ferme reste renvoyé vers /contact, jamais annoncé ici comme définitif.
+ * - Zones d'intervention : les communes précises d'Abidjan ne sont pas encore
+ *   validées par Jean Paul. En attendant, la réponse reste volontairement générale
+ *   et renvoie vers le formulaire de contact plutôt que d'inventer une liste.
+ * - Les espaces insecables suivent la meme convention typographique que le
+ *   reste du site (avant les points d'interrogation et les deux-points, et
+ *   comme separateur de milliers). Ce sont ici de vrais caracteres Unicode
+ *   (U+00A0) tapes directement dans la chaine, pas l'entite HTML nbsp : ce
+ *   texte passe par des accolades d'expression dans les pages, et une
+ *   entite HTML litterale s'y afficherait telle quelle au lieu d'etre
+ *   interpretee.
+ */
+export const FAQ_ITEMS: FaqItem[] = [
+  {
+    theme: 'Délais',
+    question: 'Combien de temps faut-il pour un morceau produit et mixé ?',
+    reponse:
+      'Comptez en moyenne deux à quatre semaines entre la première séance et le master livré, selon le nombre de titres et les allers-retours de validation. Un mixage seul, sur un morceau déjà enregistré, se boucle souvent en une semaine.',
+  },
+  {
+    theme: 'Délais',
+    question: 'Et pour un clip, une captation ou un publi-reportage ?',
+    reponse:
+      'Le tournage se cale sur votre calendrier ; comptez ensuite une à trois semaines de montage et d’étalonnage selon la longueur du format et le nombre de versions demandées.',
+  },
+  {
+    theme: 'Délais',
+    question: 'Peut-on accélérer une commande urgente ?',
+    reponse:
+      'Dans certains cas, oui, avec une majoration liée au calendrier resserré. Indiquez votre échéance dès le premier contact : on vous dit tout de suite si elle est tenable.',
+  },
+  {
+    theme: 'Tarifs',
+    question: 'Combien coûte une prestation chez Atelier 225 ?',
+    reponse:
+      'Ça dépend du métier, de la durée et de la complexité du projet. À titre indicatif, un mixage démarre autour de 50 000 FCFA le morceau, une captation ou un clip se situe le plus souvent entre 300 000 et 1 500 000 FCFA selon le format. Le montant exact est toujours confirmé par un devis écrit avant le démarrage.',
+  },
+  {
+    theme: 'Tarifs',
+    question: 'Le devis est-il gratuit et sans engagement ?',
+    reponse:
+      'Oui. Décrivez votre projet via le formulaire de contact, vous recevez une proposition chiffrée sous 48 h ouvrées, sans obligation de donner suite.',
+  },
+  {
+    theme: 'Tarifs',
+    question: 'Un acompte est-il demandé au démarrage ?',
+    reponse:
+      'Pour les projets de plus grande ampleur, un acompte au lancement et un solde à la livraison sont la règle. Les modalités précises se discutent au moment du devis.',
+  },
+  {
+    theme: 'Zones d’intervention',
+    question: 'Intervenez-vous partout à Abidjan ?',
+    reponse:
+      'Le studio est basé à Abidjan et l’équipe se déplace pour les prises de son, les tournages et les captations selon les besoins du projet. Indiquez votre quartier au moment du contact : la faisabilité et d’éventuels frais de déplacement sont confirmés avec le devis.',
+  },
+  {
+    theme: 'Zones d’intervention',
+    question: 'Travaillez-vous avec des clients hors d’Abidjan ou de la diaspora ?',
+    reponse:
+      'Oui. Une bonne partie des échanges (brief, validations, livraison des fichiers) se fait déjà à distance. Pour un tournage ou une captation en dehors d’Abidjan, écrivez-nous : on regarde ensemble ce qui est possible.',
+  },
+  {
+    theme: 'Livrables',
+    question: 'Sous quel format je récupère mes fichiers ?',
+    reponse:
+      'Pour l’audio : fichiers WAV haute définition et versions compressées prêtes pour le streaming. Pour l’image : fichiers vidéo en haute définition, avec des déclinaisons pour les réseaux (format carré, vertical) quand le projet le prévoit.',
+  },
+  {
+    theme: 'Livrables',
+    question: 'Est-ce que je récupère les fichiers sources (pistes, rushes) ?',
+    reponse:
+      'Sur demande, et selon la formule choisie. Précisez ce besoin dès le devis : la remise des sources s’organise différemment d’une simple livraison de master.',
+  },
+  {
+    theme: 'Livrables',
+    question: 'Comment les fichiers sont-ils transmis, en pratique ?',
+    reponse:
+      'Par lien de téléchargement, adapté au poids des fichiers audio et vidéo haute définition. Le lien reste actif assez longtemps pour que vous récupériez tout sans précipitation.',
+  },
+  {
+    theme: 'Commande',
+    question: 'Comment se passe une commande, du premier message à la livraison ?',
+    reponse:
+      'En quatre temps : écoute du besoin et devis, direction artistique et validation d’une maquette, production, puis livraison des masters et fichiers sources. Le détail de chaque étape est présenté sur la page Services.',
+  },
+  {
+    theme: 'Commande',
+    question: 'Dois-je déjà tout savoir avant de vous écrire ?',
+    reponse:
+      'Non. Une intention, un calendrier approximatif et une ou deux références qui vous parlent suffisent pour démarrer l’échange. Le reste s’affine ensemble.',
+  },
+  {
+    theme: 'Commande',
+    question: 'Puis-je demander des retouches après la première livraison ?',
+    reponse:
+      'Un round de retouches raisonnable est inclus dans la plupart des prestations, précisé dans le devis. Au-delà, les allers-retours supplémentaires sont chiffrés séparément.',
+  },
+];

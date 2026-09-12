@@ -95,6 +95,7 @@ src/
 │   ├── index.astro
 │   ├── catalogue/index.astro       + [slug].astro (fiche par réalisation)
 │   ├── services.astro / studio.astro / contact.astro
+│   ├── faq.astro                   Questions/réponses (accordéon natif <details>)
 │   └── 404.astro
 └── styles/
     ├── tokens.css          Jetons de design (couleur, échelle typo, espacement).
@@ -106,7 +107,8 @@ src/
 ### Changer le nom de la marque
 
 Tout est dans **`src/consts.ts`** : objet `SITE` (nom, baseline, e-mail, téléphone,
-réseaux, ville) et tableau `NAV`. Un seul fichier à éditer.
+réseaux, ville), tableau `NAV`, ainsi que `SERVICES`, `PROCESS` et `FAQ_ITEMS`
+(contenu de la page FAQ, groupé par thème). Un seul fichier à éditer.
 Pensez aussi à `site:` dans `astro.config.mjs` (domaine de production).
 
 ### Ajouter une réalisation au catalogue
