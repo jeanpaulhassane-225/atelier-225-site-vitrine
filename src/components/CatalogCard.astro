@@ -12,12 +12,12 @@ const d = entry.data;
 const typeLabel = d.type === 'sortie' ? 'Sortie' : 'Projet';
 ---
 
-<article class="card">
+<article class="card" style={`--accent: ${d.accent}`}>
   <div class="card__media">
     <Cover id={entry.id} seed={d.seed ?? entry.id} accent={d.accent} alt={`Pochette — ${d.titre}`} />
   </div>
   <div class="card__body">
-    <p class="eyebrow card__cat">{d.categorie}</p>
+    <p class="badge card__cat">{d.categorie}</p>
     <h3 class="card__title">
       <a href={`/catalogue/${entry.id}`}>{d.titre}</a>
     </h3>
@@ -53,12 +53,7 @@ const typeLabel = d.type === 'sortie' ? 'Sortie' : 'Projet';
     min-inline-size: 0;
   }
   .card__cat {
-    color: var(--text-dim);
-    font-size: 0.72rem;
-  }
-  .card__cat::before {
-    background: var(--accent);
-    inline-size: 1.4em;
+    align-self: start;
   }
   .card__title {
     font-size: var(--step-2);

@@ -1,39 +1,49 @@
 @layer tokens {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
 
-    /* ---- Couleurs : encres profondes, papier chaud, accent « heure dorée » ---- */
+    /* ---- Couleurs : fond clair neutre, encre quasi noire, accent bronze ----
+       Le bronze n'est pas arbitraire : les photos Canva déjà en place (hero,
+       pochettes catalogue) sont toutes en lumière chaude/dorée. Un accent
+       froid (bleu corporate classique) jurerait avec ces images. On garde
+       donc la famille chromatique d'origine (« heure dorée »), mais assombrie
+       et désaturée pour un rendu plus sobre/professionnel qu'un amber vif. */
     --ink-900: #0b0b0f;
     --ink-850: #101015;
     --ink-800: #16161d;
     --ink-750: #1d1d27;
     --ink-700: #262631;
 
-    --paper: #f4f0e7;
-    --paper-dim: color-mix(in oklab, var(--paper) 62%, transparent);
-    --paper-faint: color-mix(in oklab, var(--paper) 34%, transparent);
+    --cream: #f7f5f0;
+    --white: #ffffff;
+    --sable: #ece7dc;
 
-    --accent: #f2a541;
-    --accent-strong: #ffbc57;
-    --accent-2: #d9553b;
-    --accent-ink: #1a1200;
+    --charcoal: #17140f;
+    --charcoal-dim: color-mix(in oklab, var(--charcoal) 62%, var(--cream));
+    --charcoal-faint: color-mix(in oklab, var(--charcoal) 38%, var(--cream));
 
-    --line: color-mix(in oklab, var(--paper) 13%, transparent);
-    --line-strong: color-mix(in oklab, var(--paper) 26%, transparent);
+    --accent: #96651e;
+    --accent-strong: #b17a26;
+    --accent-2: #ad3a1f;
+    --accent-ink: #fff8ec;
+
+    --line: color-mix(in oklab, var(--charcoal) 12%, transparent);
+    --line-strong: color-mix(in oklab, var(--charcoal) 22%, transparent);
 
     /* Rôles sémantiques : c'est ce qu'on utilise dans les composants. */
-    --bg: var(--ink-900);
-    --surface: var(--ink-850);
-    --surface-2: var(--ink-800);
-    --surface-3: var(--ink-750);
-    --text: var(--paper);
-    --text-dim: var(--paper-dim);
+    --bg: var(--cream);
+    --surface: var(--white);
+    --surface-2: var(--sable);
+    --surface-3: color-mix(in oklab, var(--sable) 70%, var(--charcoal-faint));
+    --text: var(--charcoal);
+    --text-dim: var(--charcoal-dim);
+    --text-faint: var(--charcoal-faint);
 
     /* ---- Typographie ---- */
     --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system,
       'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --font-display: 'Fraunces Variable', 'Fraunces', ui-serif, Georgia,
-      'Times New Roman', serif;
+    --font-display: 'Archivo Variable', 'Archivo', ui-sans-serif, system-ui,
+      -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 
     /* Échelle fluide : clamp(min, préféré, max). Ratio ~1.2 mobile, ~1.333 desktop. */
     --step--1: clamp(0.833rem, 0.8rem + 0.16vw, 0.926rem);
@@ -62,8 +72,8 @@
     --radius-l: 22px;
     --radius-pill: 999px;
 
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-2: 0 18px 50px -18px rgb(0 0 0 / 0.65);
+    --shadow-1: 0 1px 2px rgb(23 20 15 / 0.08);
+    --shadow-2: 0 18px 50px -18px rgb(23 20 15 / 0.28);
 
     /* ---- Gabarit ---- */
     --wrap: 74rem;
