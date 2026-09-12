@@ -1,0 +1,164 @@
+---
+import Base from '../layouts/Base.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { FAQ_ITEMS } from '../consts';
+
+// Regroupe les questions par thème, dans l'ordre de première apparition.
+// Les items d'un même thème sont déjà consécutifs dans consts.ts ; pas de tri
+// supplémentaire ici, juste un passage en paquets pour l'affichage.
+const groupes = FAQ_ITEMS.reduce<{ theme: string; items: typeof FAQ_ITEMS }[]>(
+  (acc, item) => {
+    const dernier = acc.at(-1);
+    if (dernier && dernier.theme === item.theme) {
+      dernier.items.push(item);
+    } else {
+      acc.push({ theme: item.theme, items: [item] });
+    }
+    return acc;
+  },
+  [],
+);
+
+// Données structurées FAQPage : même esprit que le JSON-LD ProfessionalService
+// déjà posé par Base.astro, mais propre à cette page (pas de prop dédiée dans
+// Base pour l'instant, donc on l'ajoute en ligne ici plutôt que d'y toucher).
+const donneesStructurees = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.reponse,
+    },
+  })),
+};
+---
+
+<Base
+  titre="FAQ"
+  description="Délais, tarifs indicatifs, zones d’intervention et livrables : les réponses aux questions fréquentes avant de démarrer un projet avec Atelier 225."
+  chemin="/faq"
+>
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(donneesStructurees).replace(/</g, '\\u003c')}
+    is:inline
+  />
+
+  <header class="page-header wrap">
+    <p class="eyebrow">FAQ</p>
+    <h1 class="page-header__title">Vos questions, nos réponses</h1>
+    <p class="page-header__lede">
+      Délais, tarifs, zones d’intervention, format des livrables, déroulé d’une
+      commande&nbsp;: de quoi éclaircir l’essentiel avant d’écrire.
+    </p>
+  </header>
+
+  {
+    groupes.map((groupe, i) => (
+      <section class="section wrap wrap--narrow faq-groupe" aria-labelledby={`faq-theme-${i}`}>
+        <h2 id={`faq-theme-${i}`} class="eyebrow faq-groupe__titre">
+          {groupe.theme}
+        </h2>
+        <div class="faq-liste">
+          {groupe.items.map((item) => (
+            <details class="faq-item">
+              <summary class="faq-item__q">
+                <span>{item.question}</span>
+                <svg
+                  class="faq-item__chevron"
+                  viewBox="0 0 20 20"
+                  width="18"
+                  height="18"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M5 8l5 5 5-5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </summary>
+              <p class="faq-item__a text-dim">{item.reponse}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <div class="wrap">
+    <CtaBand
+      titre="Une question qu’on n’a pas couverte&nbsp;?"
+      texte="Décrivez votre besoin en quelques mots, on revient vers vous avec une réponse claire."
+      ctaLabel="Nous écrire"
+      ctaHref="/contact"
+    />
+  </div>
+</Base>
+
+<style>
+  .faq-groupe + .faq-groupe {
+    border-block-start: 1px solid var(--line);
+  }
+  .faq-groupe__titre {
+    margin-block-end: var(--space-m);
+  }
+
+  .faq-liste {
+    display: grid;
+  }
+
+  .faq-item {
+    border-block-start: 1px solid var(--line);
+    padding-block: var(--space-s);
+  }
+  .faq-item:last-child {
+    border-block-end: 1px solid var(--line);
+  }
+
+  /* Résumé natif : on retire le triangle par défaut au profit du chevron SVG. */
+  .faq-item__q {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-m);
+    padding-block: 0.4rem;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq-item__q::-webkit-details-marker {
+    display: none;
+  }
+  .faq-item__q::marker {
+    content: '';
+  }
+  .faq-item__q:hover {
+    color: var(--accent-strong);
+  }
+  .faq-item__q:focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 3px;
+    border-radius: var(--radius-s);
+  }
+
+  .faq-item__chevron {
+    flex-shrink: 0;
+    color: var(--accent);
+    transition: transform var(--dur-2) var(--ease-out);
+  }
+  .faq-item[open] .faq-item__chevron {
+    transform: rotate(180deg);
+  }
+
+  .faq-item__a {
+    margin-block-start: 0.6rem;
+    max-width: 60ch;
+  }
+</style>
