@@ -40,9 +40,9 @@ const meta: { k: string; v: string }[] = [
   chemin={`/catalogue/${entry.id}`}
   ogType="article"
 >
-  <article>
+  <article style={`--accent: ${d.accent}`}>
     <header class="oeuvre-header wrap">
-      <p class="eyebrow">{d.categorie}</p>
+      <p class="badge">{d.categorie}</p>
       <h1 class="oeuvre-header__title">{d.titre}</h1>
       <p class="oeuvre-header__resume text-dim">{d.resume}</p>
     </header>
