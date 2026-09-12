@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import CoverArt from './CoverArt.astro';
+import Cover from './Cover.astro';
 import { annee } from '../lib/format';
 
 interface Props {
@@ -14,7 +14,7 @@ const typeLabel = d.type === 'sortie' ? 'Sortie' : 'Projet';
 
 <article class="card">
   <div class="card__media">
-    <CoverArt seed={d.seed ?? entry.id} accent={d.accent} />
+    <Cover id={entry.id} seed={d.seed ?? entry.id} accent={d.accent} alt={`Pochette — ${d.titre}`} />
   </div>
   <div class="card__body">
     <p class="eyebrow card__cat">{d.categorie}</p>

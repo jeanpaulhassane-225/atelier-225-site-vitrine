@@ -1,7 +1,7 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import CoverArt from '../../components/CoverArt.astro';
+import Cover from '../../components/Cover.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import { annee } from '../../lib/format';
 
@@ -48,7 +48,7 @@ const meta: { k: string; v: string }[] = [
     </header>
 
     <div class="wrap oeuvre-cover">
-      <CoverArt seed={d.seed ?? entry.id} accent={d.accent} variant="feature" />
+      <Cover id={entry.id} seed={d.seed ?? entry.id} accent={d.accent} variant="feature" alt={`Pochette — ${d.titre}`} />
     </div>
 
     <div class="wrap oeuvre-body">
