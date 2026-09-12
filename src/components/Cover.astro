@@ -1,0 +1,79 @@
+---
+import { Image } from 'astro:assets';
+import CoverArt from './CoverArt.astro';
+
+/**
+ * Pochette du site : utilise une vraie image si elle existe dans src/assets/
+ * (catalogue/<id>.jpg ou le chemin explicite `photo`), sinon retombe sur la
+ * pochette générative CoverArt. Permet de ne remplacer qu'une partie des
+ * visuels sans casser les autres.
+ */
+
+const photos = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/**/*.{jpg,jpeg,png}',
+  { eager: true },
+);
+
+interface Props {
+  seed: string;
+  accent: string;
+  variant?: 'grid' | 'feature';
+  class?: string;
+  id?: string;
+  photo?: string;
+  alt?: string;
+}
+
+const { seed, accent, variant = 'grid', class: className, id, photo, alt = '' } = Astro.props;
+const key = photo ?? (id ? `catalogue/${id}` : undefined);
+const mod = key
+  ? (photos[`/src/assets/${key}.jpg`] ?? photos[`/src/assets/${key}.jpeg`] ?? photos[`/src/assets/${key}.png`])
+  : undefined;
+---
+
+{
+  mod ? (
+    <div class:list={['cover', className]} data-variant={variant}>
+      <Image src={mod.default} alt={alt} width={1600} height={1200} />
+    </div>
+  ) : (
+    <CoverArt seed={seed} accent={accent} variant={variant} class={className} />
+  )
+}
+
+<style>
+  .cover {
+    position: relative;
+    overflow: hidden;
+    background: var(--ink-850);
+    border-radius: inherit;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      130% 130% at 28% 18%,
+      transparent 38%,
+      rgb(0 0 0 / 0.38) 100%
+    );
+  }
+  .cover[data-variant='grid'] {
+    aspect-ratio: 4 / 3;
+  }
+  .cover[data-variant='feature'] {
+    aspect-ratio: 16 / 10;
+  }
+  .cover :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  @media (min-width: 60rem) {
+    .cover[data-variant='feature'] {
+      aspect-ratio: 21 / 9;
+    }
+  }
+</style>
