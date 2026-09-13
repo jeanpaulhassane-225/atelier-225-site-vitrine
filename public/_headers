@@ -1,11 +1,43 @@
 # En-têtes HTTP appliqués par Cloudflare Pages (fichier copié tel quel dans dist/).
 # https://developers.cloudflare.com/pages/configuration/headers/
 
+# --- Content-Security-Policy : comment elle a été calibrée ---
+# Le site est 100% statique (aucun JS tiers, aucune police ou image externe :
+# Fontsource auto-héberge les polices, astro:assets sert les images en /_astro/).
+# Inventaire réel des scripts et styles inline du build (voir dist/**/*.html) :
+#   1. JSON-LD ProfessionalService (Base.astro, is:inline)      -> sur les 16 pages
+#   2. JSON-LD FAQPage (faq.astro, is:inline)                    -> /faq uniquement
+#   3. <script> menu mobile (Header.astro)                       -> sur les 16 pages
+#   4. <script> filtre du catalogue (CatalogGrid.astro)          -> / et /catalogue
+#   5. <script> validation + envoi (ContactForm.astro)           -> /contact uniquement
+# Chacun est autorisé via son hash SHA-256 exact plutôt que 'unsafe-inline', pour
+# ne pas ouvrir la porte à un script injecté par ailleurs.
+# IMPORTANT : ces 5 hashes sont calculés sur le HTML généré. Si le contenu d'un de
+# ces 5 scripts change (nouveau texte dans SITE ou FAQ_ITEMS pour les JSON-LD,
+# modification du code des composants pour les 3 autres), le hash change aussi et
+# le script sera bloqué en silence (JSON-LD absent du SEO, menu ou formulaire
+# inertes) tant que le hash n'est pas recalculé ici. Régénérer avec :
+#   node -e "console.log(require('crypto').createHash('sha256').update(CONTENU,'utf8').digest('base64'))"
+# en collant le contenu exact du <script> depuis dist/ après un `npm run build`.
+#
+# Les 13 attributs style="--accent: …" (fiches catalogue, couleur par œuvre) et le
+# CSS de page auto-inliné (build.inlineStylesheets: 'auto' dans astro.config.mjs)
+# passent par style-src 'unsafe-inline' : ce sont des couleurs et des règles CSS
+# sans risque d'exécution, et leur nombre grandit avec le catalogue (un hash par
+# valeur serait ingérable et casserait à chaque nouvelle fiche).
+#
+# connect-src et form-action autorisent déjà api.web3forms.com : le formulaire de
+# contact bascule sur mailto: tant que SITE.formulaireEndpoint est vide (voir
+# consts.ts et le README), mais le README documente Web3Forms comme option future.
+# Si un autre prestataire est choisi un jour, mettre à jour ces deux directives en
+# même temps que SITE.formulaireEndpoint dans consts.ts.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-Lhy6nDHE/jP7LAn7x5eNp+kQVEPxBiNMPd8mfJyZGJg=' 'sha256-dVb3ljyplFDvHf+Rb92G/XU9nC+tVR8bJvRx0nI3ZKE=' 'sha256-EZnK1akZvSerGo5CrH803bx8dMjzmC0fFIoRGBAy2eI=' 'sha256-i+ZB4Q/OjrG8ZqRIsekG26bK3C+CWLBPZvzllCfFPNw=' 'sha256-BJ4rY1orOiIQP63EoGPOQU8WmitcSDCnZYUGo/A8I8k='; connect-src 'self' https://api.web3forms.com; form-action 'self' mailto: https://api.web3forms.com; upgrade-insecure-requests
 
 # Les fichiers de /_astro/ portent un hash dans leur nom : cache très long sûr.
 /_astro/*
