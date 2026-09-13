@@ -7,7 +7,7 @@ Rendu **statique**, aucune base de données, aucun service tiers obligatoire.
 
 | Choix | Pourquoi |
 |---|---|
-| **Astro 5** | Générateur orienté contenu. Rend chaque page en HTML à la compilation. Par défaut, **zéro JavaScript** envoyé au navigateur. |
+| **Astro 7** | Générateur orienté contenu. Rend chaque page en HTML à la compilation. Par défaut, **zéro JavaScript** envoyé au navigateur. |
 | **Îlots** (`islands`) | Seuls trois morceaux embarquent du JS : menu mobile, filtre du catalogue, validation du formulaire. Le reste est du HTML pur. |
 | **TypeScript strict** | Le contenu du catalogue est validé par un schéma (`src/content.config.ts`). Un champ oublié casse le build, pas la page en production. |
 | **CSS natif moderne** | Couches `@layer`, imbrication, `color-mix()`, requêtes de conteneur, `:has()`. Aucune dépendance CSS, aucune étape de compilation Tailwind. |
@@ -30,7 +30,7 @@ npm run check     # vérification TypeScript + Astro
 npm run verifier  # check + build, reproduit exactement la CI (à lancer avant un commit)
 ```
 
-Node 18.20.8+ requis. La version de référence est dans `.nvmrc` (Node 24), utilisée par la CI et localement si tu as nvm.
+Node 22.12.0+ requis (exigence d'Astro 7, cf. `node_modules/astro/package.json`). La version de référence est dans `.nvmrc` (Node 24), utilisée par la CI et le déploiement Cloudflare Pages, et localement si tu as nvm.
 
 ## Intégration continue
 

@@ -1,4 +1,5 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 /**
@@ -37,7 +38,7 @@ const catalogue = defineCollection({
       .array(z.object({ role: z.string(), nom: z.string() }))
       .default([]),
     liens: z
-      .array(z.object({ label: z.string(), url: z.string().url() }))
+      .array(z.object({ label: z.string(), url: z.url() }))
       .default([]),
     /** Mise en avant sur la page d'accueil. */
     aLaUne: z.boolean().default(false),
