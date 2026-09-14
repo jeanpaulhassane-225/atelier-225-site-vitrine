@@ -1,0 +1,213 @@
+---
+import type { Service } from '../consts';
+
+interface Props {
+  services: Service[];
+}
+
+const { services } = Astro.props;
+---
+
+<nav class="service-subnav" aria-label="Navigation entre les services">
+  <ul class="service-subnav__list wrap" role="list">
+    {
+      services.map((service) => (
+        <li>
+          <a
+            class="service-subnav__link"
+            href={`#${service.slug}`}
+            data-slug={service.slug}
+            style={`--accent: ${service.accent}`}
+          >
+            {service.titre}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  /* Sticky juste sous le header principal (lui-même sticky) : les deux
+     barres s'empilent sans qu'aucune coordination JS ou CSS côté Header ne
+     soit nécessaire, grâce au token --header-h déjà exposé globalement.
+     z-index inférieur à celui du Header (50) pour rester dessous en cas de
+     chevauchement pendant un défilement rapide. Volontairement PAS de
+     glassmorphism ici : le traitement verre dépoli est réservé aux cartes de
+     service (cf. ServiceCard.astro) ; un fond quasi opaque suffit pour une
+     barre de navigation qui doit rester lisible en toutes circonstances. */
+  .service-subnav {
+    position: sticky;
+    inset-block-start: var(--header-h);
+    z-index: 40;
+    block-size: var(--subnav-h);
+    display: flex;
+    align-items: center;
+    background: color-mix(in oklab, var(--surface) 96%, transparent);
+    border-block-end: 1px solid var(--line);
+  }
+  .service-subnav__list {
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 1.75rem);
+    overflow-x: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+    block-size: 100%;
+  }
+  .service-subnav__link {
+    display: inline-flex;
+    align-items: center;
+    block-size: 100%;
+    white-space: nowrap;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--text-dim);
+    text-decoration: none;
+    border-block-end: 2px solid transparent;
+    transition:
+      color var(--dur-1) var(--ease-out),
+      border-color var(--dur-1) var(--ease-out);
+  }
+  .service-subnav__link:hover {
+    color: var(--text);
+  }
+  .service-subnav__link[aria-current='location'] {
+    color: var(--text);
+    border-color: var(--accent);
+  }
+</style>
+
+<script>
+  // Scroll-spy : met en surbrillance le lien du service actuellement visible
+  // sous les deux barres sticky (header + sous-nav). aria-current="location"
+  // est la valeur ARIA correcte pour "élément courant dans un ensemble qui
+  // représente la position de l'utilisateur" — distincte d'aria-current="page"
+  // déjà utilisé par Header.astro pour la nav principale (qui pointe vers
+  // d'AUTRES pages, pas une position dans la page courante).
+  function initServiceSubNav() {
+    const nav = document.querySelector<HTMLElement>('.service-subnav');
+    if (!nav) return;
+
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>('.service-subnav__link')];
+    if (!links.length) return;
+
+    const sections = links
+      .map((link) => document.getElementById(link.dataset.slug ?? ''))
+      .filter((el): el is HTMLElement => el !== null);
+    if (!sections.length) return;
+
+    const setActive = (id: string | null) => {
+      for (const link of links) {
+        if (link.dataset.slug === id) {
+          link.setAttribute('aria-current', 'location');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      }
+    };
+
+    const visibles = new Set<string>();
+    let observer: IntersectionObserver | null = null;
+
+    const build = () => {
+      observer?.disconnect();
+      visibles.clear();
+      // Offset dynamique = hauteur combinée du header + de la sous-nav une
+      // fois collés en haut, mesurée plutôt que recalculée depuis les tokens
+      // CSS : reste correct même si la hauteur du header changeait un jour.
+      //
+      // Bug corrigé (cf. QA) : `nav.getBoundingClientRect().bottom` donne la
+      // position de la sous-nav au moment de l'appel, pas sa hauteur
+      // collée. Au chargement initial de la page (avant tout défilement),
+      // la sous-nav n'est PAS encore collée sous le header — elle est encore
+      // à sa position naturelle dans le flux, sous le bloc de titre de page
+      // — donc `.bottom` renvoyait une valeur très supérieure à la hauteur
+      // réelle des deux barres empilées (header + sous-nav), décalant toute
+      // la ligne de déclenchement du scroll-spy trop bas. La hauteur propre
+      // d'un élément sticky, elle, ne dépend jamais de sa position : on
+      // additionne donc les hauteurs propres du header et de la sous-nav,
+      // justes quel que soit le moment où ce calcul s'exécute.
+      const header = document.querySelector<HTMLElement>('header');
+      const offset = Math.round(
+        (header?.getBoundingClientRect().height ?? 0) + nav.getBoundingClientRect().height,
+      );
+      // Bande d'observation réduite à une ligne fine juste sous les deux
+      // barres sticky, plutôt qu'une large zone (auparavant jusqu'à 45% de
+      // la hauteur d'écran, via `-55%` en marge basse).
+      //
+      // Bug corrigé (cf. QA) : avec une large bande, pendant un défilement
+      // manuel, la carte précédente restait « techniquement » intersectante
+      // tant qu'un reste de quelques dizaines de pixels en bas de carte
+      // touchait encore la bande, alors que la carte suivante l'était déjà
+      // elle aussi. `sections.find()` retenait alors la première section de
+      // l'ordre du tableau (la précédente) jusqu'à ce qu'elle sorte
+      // complètement de la bande, d'où le décalage constaté (jusqu'à ~130px
+      // de défilement en trop) avant correction.
+      //
+      // Une ligne fine (au lieu d'une large bande) réduit drastiquement les
+      // situations où deux cartes sont techniquement intersectantes à la
+      // fois, donc la fenêtre pendant laquelle un choix ambigu doit être
+      // tranché — l'essentiel du gain vient de là. Ça ne l'élimine pas tout
+      // à fait (cf. `findLast` plus bas, pour le résidu).
+      // 24px, pas 4 : reste minuscule comparé à l'ancienne bande (jusqu'à
+      // 45% de la hauteur d'écran), donc conserve la précision qui corrige
+      // le bug, mais couvre la marge de respiration de `:target { scroll-
+      // margin-top: … + 1rem }` (global.css) — sans cette tolérance, un clic
+      // sur un lien de la sous-nav atterrit avec le haut de la carte ciblée
+      // ~16px sous la ligne de déclenchement (juste hors bande), donc aucun
+      // lien ne s'allume tant que l'utilisateur n'a pas un peu redéfilé.
+      const ligne = 24; // px
+
+      const margeBasse = Math.max(0, window.innerHeight - offset - ligne);
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) visibles.add(entry.target.id);
+            else visibles.delete(entry.target.id);
+          }
+          // findLast, pas find : deux cartes strictement adjacentes (sans
+          // gap, cf. `.service--vitrine + .service--vitrine` dans
+          // ServiceCard.astro — vrai pour la 1ʳᵉ paire, les autres ont un
+          // gap) peuvent chevaucher la bande simultanément pendant les
+          // ~24px de la ligne de déclenchement. Entre deux cartes
+          // techniquement intersectantes à la fois, on veut toujours celle
+          // la PLUS BASSE dans l'ordre du document (celle vers laquelle
+          // l'utilisateur vient de défiler ou de cliquer), jamais la
+          // première de l'ordre du tableau : c'est exactement l'inverse de
+          // `find()`, qui reproduirait le biais à l'origine du bug corrigé
+          // ci-dessus, à une échelle plus fine.
+          const courant = sections.findLast((s) => visibles.has(s.id));
+          // Si la ligne de déclenchement traverse le gap entre deux cartes
+          // (margin-block-start entre `.service--vitrine`), aucune section
+          // n'intersecte momentanément : on conserve alors le dernier lien
+          // actif plutôt que de tout désélectionner brièvement.
+          if (courant) setActive(courant.id);
+        },
+        { rootMargin: `${-offset}px 0px ${-margeBasse}px 0px`, threshold: 0 },
+      );
+      sections.forEach((s) => observer?.observe(s));
+    };
+
+    build();
+
+    let resizeTimer: number | undefined;
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(build, 150);
+    };
+    window.addEventListener('resize', onResize);
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        observer?.disconnect();
+        window.removeEventListener('resize', onResize);
+        window.clearTimeout(resizeTimer);
+      },
+      { once: true },
+    );
+  }
+
+  document.addEventListener('astro:page-load', initServiceSubNav);
+</script>

@@ -58,7 +58,11 @@
     padding: 0;
   }
   :target {
-    scroll-margin-top: calc(var(--header-h) + 1rem);
+    /* --subnav-h (tokens.css) n'est consommée aujourd'hui que par la
+       sous-navigation sticky de la page Services (ServiceSubNav.astro) : sur
+       les pages sans sous-navigation, aucun élément n'est ciblé par :target,
+       donc cette marge plus généreuse n'a aucun effet visible ailleurs. */
+    scroll-margin-top: calc(var(--header-h) + var(--subnav-h) + 1rem);
   }
 
   @media (prefers-reduced-motion: reduce) {

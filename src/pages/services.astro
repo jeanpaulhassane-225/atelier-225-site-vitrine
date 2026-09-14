@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import ServiceCard from '../components/ServiceCard.astro';
+import ServiceSubNav from '../components/ServiceSubNav.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { SERVICES, PROCESS } from '../consts';
 ---
@@ -19,8 +20,14 @@ import { SERVICES, PROCESS } from '../consts';
     </p>
   </header>
 
+  <ServiceSubNav services={SERVICES} />
+
   <section class="section wrap" aria-label="Liste des services">
-    {SERVICES.map((service, i) => <ServiceCard service={service} index={i} detaille />)}
+    {
+      SERVICES.map((service, i) => (
+        <ServiceCard service={service} index={i} detaille variant="vitrine" />
+      ))
+    }
   </section>
 
   <section class="section wrap wrap--narrow" aria-labelledby="process-titre">
