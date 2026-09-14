@@ -10,13 +10,21 @@
 #   3. <script> menu mobile (Header.astro)                       -> sur les 16 pages
 #   4. <script> filtre du catalogue (CatalogGrid.astro)          -> / et /catalogue
 #   5. <script> validation + envoi (ContactForm.astro)           -> /contact uniquement
+#   6. <script> reveal au scroll (ServiceCard.astro)              -> / et /services
+#   7. <script> scroll-spy sous-nav (ServiceSubNav.astro)         -> /services uniquement
 # Chacun est autorisé via son hash SHA-256 exact plutôt que 'unsafe-inline', pour
 # ne pas ouvrir la porte à un script injecté par ailleurs.
-# IMPORTANT : ces 5 hashes sont calculés sur le HTML généré. Si le contenu d'un de
-# ces 5 scripts change (nouveau texte dans SITE ou FAQ_ITEMS pour les JSON-LD,
-# modification du code des composants pour les 3 autres), le hash change aussi et
-# le script sera bloqué en silence (JSON-LD absent du SEO, menu ou formulaire
-# inertes) tant que le hash n'est pas recalculé ici. Régénérer avec :
+# IMPORTANT : ces 7 hashes sont calculés sur le HTML généré. Si le contenu d'un de
+# ces 7 scripts change (nouveau texte dans SITE ou FAQ_ITEMS pour les JSON-LD,
+# modification du code des composants pour les autres), le hash change aussi et
+# le script sera bloqué en silence (JSON-LD absent du SEO, menu, formulaire, reveal
+# ou scroll-spy inertes) tant que le hash n'est pas recalculé ici. Un script bloqué
+# par la CSP ne lève PAS d'erreur JS visible à l'astro dev/preview habituel : le
+# fichier public/_headers n'est interprété que par Cloudflare Pages en production,
+# donc ce genre de régression ne se voit qu'en testant le build déployé (ou en
+# ouvrant la console du navigateur sur un aperçu qui sert bien ces en-têtes).
+# Après tout changement touchant un de ces 7 scripts, recalculer systématiquement
+# avec :
 #   node -e "console.log(require('crypto').createHash('sha256').update(CONTENU,'utf8').digest('base64'))"
 # en collant le contenu exact du <script> depuis dist/ après un `npm run build`.
 #
@@ -37,7 +45,7 @@
   X-Frame-Options: DENY
   Permissions-Policy: geolocation=(), microphone=(), camera=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-Lhy6nDHE/jP7LAn7x5eNp+kQVEPxBiNMPd8mfJyZGJg=' 'sha256-dVb3ljyplFDvHf+Rb92G/XU9nC+tVR8bJvRx0nI3ZKE=' 'sha256-EZnK1akZvSerGo5CrH803bx8dMjzmC0fFIoRGBAy2eI=' 'sha256-i+ZB4Q/OjrG8ZqRIsekG26bK3C+CWLBPZvzllCfFPNw=' 'sha256-BJ4rY1orOiIQP63EoGPOQU8WmitcSDCnZYUGo/A8I8k='; connect-src 'self' https://api.web3forms.com; form-action 'self' mailto: https://api.web3forms.com; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self'; font-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'sha256-Lhy6nDHE/jP7LAn7x5eNp+kQVEPxBiNMPd8mfJyZGJg=' 'sha256-dVb3ljyplFDvHf+Rb92G/XU9nC+tVR8bJvRx0nI3ZKE=' 'sha256-EZnK1akZvSerGo5CrH803bx8dMjzmC0fFIoRGBAy2eI=' 'sha256-i+ZB4Q/OjrG8ZqRIsekG26bK3C+CWLBPZvzllCfFPNw=' 'sha256-BJ4rY1orOiIQP63EoGPOQU8WmitcSDCnZYUGo/A8I8k=' 'sha256-RFrP5bTb4qDW4iXB8f4NSjJLjui5K/al8X905Hyko88=' 'sha256-VBDIJZW+f5OKN+/kP7bGukgmRJqDn9n9YWYkC5JhkGY='; connect-src 'self' https://api.web3forms.com; form-action 'self' mailto: https://api.web3forms.com; upgrade-insecure-requests
 
 # Les fichiers de /_astro/ portent un hash dans leur nom : cache très long sûr.
 /_astro/*

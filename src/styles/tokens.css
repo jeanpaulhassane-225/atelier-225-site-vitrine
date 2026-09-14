@@ -80,6 +80,12 @@
     --wrap-narrow: 46rem;
     --gutter: clamp(1.25rem, 5vw, 3rem);
     --header-h: 4.25rem;
+    /* Hauteur de la sous-navigation interne de la page Services (sticky sous
+       le header principal). Un seul endroit pour ce chiffre : consommé par
+       ServiceSubNav.astro (sa propre hauteur + son offset `top`) et par la
+       règle `:target` de global.css (pour que les ancres de service ne se
+       fassent pas manger par les deux barres sticky empilées). */
+    --subnav-h: 3.25rem;
 
     /* ---- Mouvement ---- */
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);

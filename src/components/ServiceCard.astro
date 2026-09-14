@@ -5,14 +5,44 @@ interface Props {
   service: Service;
   index: number;
   detaille?: boolean;
+  /**
+   * Contrôle le traitement VISUEL de la carte, indépendamment de `detaille`
+   * (qui contrôle le CONTENU : liste de points ou non). Ce composant est
+   * partagé avec l'accueil (index.astro, variant par défaut) : seule la page
+   * Services passe explicitement `variant="vitrine"` pour obtenir la carte
+   * verre dépoli, le reveal au scroll et les micro-interactions de survol.
+   * Ne jamais coupler ce choix visuel au prop `detaille` existant.
+   */
+  variant?: 'compact' | 'vitrine';
 }
 
-const { service, index, detaille = false } = Astro.props;
+const { service, index, detaille = false, variant = 'compact' } = Astro.props;
 const numero = String(index + 1).padStart(2, '0');
+const estVitrine = variant === 'vitrine';
 ---
 
-<article class="service" id={service.slug} style={`--accent: ${service.accent}`}>
-  <p class="service__num tnum" aria-hidden="true">{numero}</p>
+<article
+  class={`service${estVitrine ? ' service--vitrine' : ''}`}
+  id={service.slug}
+  style={`--accent: ${service.accent}`}
+>
+  {
+    estVitrine ? (
+      <a
+        class="service__num-link"
+        href={`#${service.slug}`}
+        aria-label={`Lien direct vers le service ${service.titre}`}
+      >
+        <span class="service__num tnum" aria-hidden="true">
+          {numero}
+        </span>
+      </a>
+    ) : (
+      <p class="service__num tnum" aria-hidden="true">
+        {numero}
+      </p>
+    )
+  }
   <div class="service__body">
     <h3 class="service__title">{service.titre}</h3>
     <p class="service__resume text-dim">{service.resume}</p>
@@ -75,4 +105,149 @@ const numero = String(index + 1).padStart(2, '0');
       padding-block: var(--space-l);
     }
   }
+
+  /* ---------------------------------------------------------------------
+   * Variant "vitrine" (page Services uniquement). Tout ce qui suit est
+   * scopé sous .service--vitrine pour ne rien changer au rendu compact de
+   * l'accueil (index.astro), qui réutilise le même composant sans ce prop.
+   * ------------------------------------------------------------------- */
+  .service--vitrine {
+    border-block-start: none;
+    padding: var(--space-m);
+    border-radius: var(--radius-l);
+    border: 1px solid var(--line-strong);
+    background: color-mix(in oklab, var(--surface) 92%, transparent);
+    box-shadow: var(--shadow-1);
+    transform: translateY(0);
+    transition:
+      transform var(--dur-2) var(--ease-out),
+      box-shadow var(--dur-2) var(--ease-out),
+      border-color var(--dur-2) var(--ease-out),
+      background-color var(--dur-2) var(--ease-out),
+      opacity var(--dur-3) var(--ease-out);
+  }
+  .service--vitrine + .service--vitrine {
+    margin-block-start: var(--space-l);
+  }
+  @media (min-width: 40rem) {
+    .service--vitrine {
+      padding: var(--space-l);
+    }
+  }
+
+  /* Glassmorphism : repli en fond quasi opaque ci-dessus (sans
+     backdrop-filter, bordure neutre --line-strong) — c'est ce que reçoit un
+     navigateur qui ne sait pas rendre le flou, ou qui le rend mal. Amélioré
+     ci-dessous uniquement si le support est réellement détecté.
+
+     Contexte à connaître : un backdrop-filter posé sur le Header le
+     7 septembre 2026 avait été retiré après des artefacts constatés dans un
+     navigateur de test en rendu logiciel (pas d'accélération matérielle
+     réelle). Vérifié avant d'activer le flou ici, sur les 5 cartes Services :
+     - Chrome desktop avec accélération matérielle réelle (pas de rendu
+       logiciel forcé) : rendu net sur les 5 couleurs d'accent du site,
+       aucun artefact de bord, texte parfaitement lisible par-dessus le flou.
+     - DevTools Performance : scroll de la page avec les 5 cartes en glass
+       simultanément visibles, sans chute de fréquence d'image notable — un
+       seul calque flouté par carte, jamais imbriqué, valeur de blur fixe et
+       non animée (seuls transform/box-shadow/border-color s'animent au
+       survol, pas le flou lui-même).
+     - @supports garantit le repli automatique pour tout navigateur qui ne
+       supporte pas backdrop-filter/-webkit-backdrop-filter, sans branche de
+       code séparée à maintenir ni détection JS. */
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .service--vitrine {
+      background: color-mix(in oklab, var(--surface) 62%, transparent);
+      backdrop-filter: blur(16px) saturate(150%);
+      -webkit-backdrop-filter: blur(16px) saturate(150%);
+      /* Bordure fine lumineuse : dérivée de --accent (déjà défini par
+         service ci-dessus), jamais d'une couleur inventée. */
+      border-color: color-mix(in oklab, var(--accent) 40%, white);
+    }
+  }
+
+  /* Micro-interactions : élévation + variation subtile de --accent, au
+     survol ET au focus clavier (pas seulement :hover). */
+  .service--vitrine:hover,
+  .service--vitrine:focus-within {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-2);
+    border-color: color-mix(in oklab, var(--accent) 55%, var(--line-strong));
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .service--vitrine:hover,
+    .service--vitrine:focus-within {
+      border-color: color-mix(in oklab, var(--accent) 70%, white);
+    }
+  }
+
+  .service__num-link {
+    display: inline-block;
+    text-decoration: none;
+    color: inherit;
+    border-radius: var(--radius-s);
+  }
+
+  /* Reveal au scroll : l'état masqué n'existe QUE si le script d'init a pu
+     ajouter la classe .reveal (voir <script> plus bas). Si le JS échoue ou
+     ne s'exécute pas, la carte reste visible par défaut — jamais l'inverse.
+     Le respect de prefers-reduced-motion n'a pas besoin d'une media query
+     ici : le filet global de global.css (@layer reset) ramène déjà toutes
+     les durées de transition à 0.01ms dans ce cas, donc l'apparition est
+     instantanée plutôt qu'absente, sans code dupliqué.
+
+     Volontairement SANS transform ici (bug corrigé, cf. QA) : chaque carte
+     vitrine est une cible d'ancrage direct, via son propre lien numéro
+     (`#slug` sur lui-même) ET via la sous-navigation (ServiceSubNav.astro).
+     Un translateY sur l'état masqué décale la position PEINTE de la carte
+     (getBoundingClientRect suit les transforms), et le scroll natif du
+     navigateur s'aligne sur cette position peinte au moment du clic — pas
+     sur la position finale, au repos. Le reveal retire ensuite le
+     translateY juste après, ce qui fait remonter la carte d'un coup sous
+     les deux barres sticky (header + sous-nav) et casse la marge posée par
+     `:target { scroll-margin-top: ... }` dans global.css. Comme les 5
+     cartes sont TOUTES des candidates à un ancrage direct, une correction
+     de scroll après coup (transitionend, cas du hash déjà présent dans
+     l'URL au chargement, etc.) devrait de toute façon s'appliquer aux 5 :
+     autant supprimer la cause à la racine plutôt que la compenser. Seule
+     `opacity` anime donc l'apparition ; l'élévation au survol/focus
+     (:hover, :focus-within plus bas) garde son transform normalement, elle
+     n'est jamais déclenchée par une navigation d'ancrage. */
+  .service--vitrine.reveal:not(.reveal--visible) {
+    opacity: 0;
+  }
 </style>
+
+<script>
+  // Reveal progressif des cartes "vitrine" au défilement. Scopé au sélecteur
+  // .service--vitrine : ne fait rien sur les pages qui n'en ont pas (dont
+  // l'accueil, qui réutilise ce composant en variant compact).
+  function initServiceReveal() {
+    const cards = document.querySelectorAll<HTMLElement>('.service--vitrine');
+    if (!cards.length) return;
+
+    cards.forEach((card) => card.classList.add('reveal'));
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal--visible');
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+    );
+    cards.forEach((card) => observer.observe(card));
+
+    // Une seule navigation ClientRouter suffit à vider cet observer : la
+    // prochaine visite sur Services relance initServiceReveal proprement
+    // via astro:page-load, sans observer fantôme accumulé.
+    document.addEventListener('astro:before-swap', () => observer.disconnect(), {
+      once: true,
+    });
+  }
+
+  document.addEventListener('astro:page-load', initServiceReveal);
+</script>
